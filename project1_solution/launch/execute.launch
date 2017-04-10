@@ -1,0 +1,7 @@
+<launch>
+	<node pkg="project1_solution"
+	  	  type="solution.py"
+	  	  name="project1_solution"
+	  	  output="screen" 
+	></node>
+</launch>
