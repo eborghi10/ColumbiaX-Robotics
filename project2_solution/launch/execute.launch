@@ -1,0 +1,24 @@
+<launch>
+
+	<node
+		pkg="rviz"
+		type="rviz"
+		name="rviz"
+		output="screen"
+	/>
+
+	<node 
+		pkg="marker_publisher"
+		type="marker_publisher_node"
+		name="marker_publisher_node"
+		output="screen"
+	/>
+
+	<node 
+		pkg="project2_solution"
+		type="solution.py"
+		name="project2_solution_node"
+		output="screen"
+	/>
+
+</launch>

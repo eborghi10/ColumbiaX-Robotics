@@ -1,0 +1,10 @@
+<launch>
+
+	<node 
+		pkg="marker_publisher"
+		type="marker_publisher_node"
+		name="marker_publisher_node"
+		output="screen"
+	/>	
+
+</launch>
