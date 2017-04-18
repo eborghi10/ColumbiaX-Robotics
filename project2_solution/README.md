@@ -34,3 +34,7 @@ For a rotation expressed as roll-pitch-yaw, you can use the `quaternion_from_eul
 **Be careful about the order of operations**. If a transform specifies that the rotation must happen first, followed by the translation (e.g. at points 1. and 2. above), make sure to follow that.
 
 The transforms must be published in a continuous loop at a rate of 10Hz or more.
+
+Once you run your code, these bodies will position themselves in space according to the transforms your code is publishing. The cylinder denotes the object, the cube and arrow the robot and camera respectively. If your code works correctly, you should see the arrow point out of the cube directly at the cylinder. Here is an example of the correct output (note that the colored axes show you the location of the base coordinate frame with the usual convention: x-red, y-green, z-blue):
+
+!(103x_P2_1.png)[ROS Markers]

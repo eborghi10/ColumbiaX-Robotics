@@ -1,5 +1,13 @@
 <launch>
 
+	<node
+		pkg="rviz"
+		type="rviz"
+		name="rviz"
+		output="screen"
+		args="-d $(find marker_publisher)/launch/config.rviz"
+	/>
+
 	<node 
 		pkg="marker_publisher"
 		type="marker_publisher_node"
