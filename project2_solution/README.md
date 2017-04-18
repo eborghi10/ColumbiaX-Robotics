@@ -27,7 +27,7 @@ Write a ROS node that publishes the following transforms to TF:
 - The transform from the '_robot_' coordinate frame to the '_camera_' coordinate frame
 
 
-##Additional Information
+## Additional Information
 
 For a rotation expressed as roll-pitch-yaw, you can use the `quaternion_from_euler()` or `euler_matrix()` functions with the default axes convention - i.e. `quaternion_from_euler(roll_value, pitch_value, yaw_value)`.
 
@@ -37,4 +37,4 @@ The transforms must be published in a continuous loop at a rate of 10Hz or more.
 
 Once you run your code, these bodies will position themselves in space according to the transforms your code is publishing. The cylinder denotes the object, the cube and arrow the robot and camera respectively. If your code works correctly, you should see the arrow point out of the cube directly at the cylinder. Here is an example of the correct output (note that the colored axes show you the location of the base coordinate frame with the usual convention: x-red, y-green, z-blue):
 
-!(103x_P2_1.png)[ROS Markers]
+![ROS Markers](103x_P2_1.png)
