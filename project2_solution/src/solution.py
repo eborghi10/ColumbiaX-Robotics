@@ -87,11 +87,19 @@ def publish_transforms():
     camera_transform.header.stamp = rospy.Time.now()
     camera_transform.header.frame_id = "robot_frame"
     camera_transform.child_frame_id = "camera_frame"
+
+    '''
+    Calculate the vector pointing from the camera to the object, 
+    use the dot and cross products to deduce the angle and axis
+    to rotate around.
+    '''
+
     
     v3 = [0.0, 0.1, 0.1]
     D3 = tf.transformations.translation_matrix(v3)
     rospy.loginfo("\n\nD3 = %s\n", D3)
 
+    '''
     global first_time
     if first_time == True:
         first_time = False
@@ -151,15 +159,23 @@ def publish_transforms():
 
     T3 = tf.transformations.concatenate_matrices(D3, R5)
     #rospy.loginfo("\n\nT3 = %s\n\nD3 = %s\n\nR5 = %s\n", T3,D3,R5)
+    '''
+    
+    '''
+    You need to find the transform of the object frame with
+    respect to the camera frame, which then needs to be aligned
+    with the x axis.
+    '''
 
+    T_inv = tf.transformations.concatenate_matrices(
+        tf.transformations.inverse_matrix(D3),
+        tf.transformations.inverse_matrix(T2), T1)
+
+    T3 = tf.transformations.concatenate_matrices(
+        D3, tf.transformations.quaternion_matrix(
+            tf.transformations.quaternion_from_matrix(T_inv)))
+    
     camera_transform.transform = message_from_transform(T3)
-
-    '''
-    Calculate the vector pointing from the camera to the object, 
-    use the dot and cross products to deduce the angle and axis
-    to rotate around.
-    '''
-
     br.sendTransform(camera_transform)
 
 ########################################################
