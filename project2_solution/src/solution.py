@@ -20,6 +20,7 @@ def message_from_transform(T):
 	msg.rotation.w = q[3]
 	return msg
 
+########################################################
 # CALCULATES THE ANGLE BETWEEN N-DIMENSIONAL VECTORS
 # http://stackoverflow.com/questions/2827393/angles-between-two-n-dimensional-vectors-in-python
 
@@ -41,6 +42,15 @@ def angle_between(v1, v2):
     v2_u = unit_vector(v2)
     return np.arccos(np.clip(np.dot(v1_u, v2_u), -1.0, 1.0))
 
+def matrix_by_vector_multiplication(matrix,vector):
+    """Multiplication of matrix by vector"""
+    matrix_np = np.array(matrix)
+    vector_np = np.array(vector)
+    vector_np = np.append(vector_np,1)
+    return np.matmul(matrix_np, vector_np)
+
+########################################################
+
 def publish_transforms():
     object_transform = geometry_msgs.msg.TransformStamped()
     object_transform.header.stamp = rospy.Time.now()
@@ -55,6 +65,8 @@ def publish_transforms():
 
     br.sendTransform(object_transform)
 
+    ########################################################
+
     robot_transform = geometry_msgs.msg.TransformStamped()
     robot_transform.header.stamp = rospy.Time.now()
     robot_transform.header.frame_id = "base_frame"
@@ -68,71 +80,76 @@ def publish_transforms():
     robot_transform.transform = message_from_transform(T2)
     
     br.sendTransform(robot_transform)
- 
+    
+    ########################################################
+
     camera_transform = geometry_msgs.msg.TransformStamped()
     camera_transform.header.stamp = rospy.Time.now()
     camera_transform.header.frame_id = "robot_frame"
     camera_transform.child_frame_id = "camera_frame"
     
-    T3 = tf.transformations.translation_matrix((0.0,0.1,0.1))
+    v3 = [0.0, 0.1, 0.1]
 
-    '''
-    r2 = tf.transformations.inverse_matrix(
-        tf.transformations.quaternion_matrix(
-        tf.transformations.quaternion_about_axis(1.5, (0.0, 0.0, 1.0))))
+    # Nodo 4 referenciado al nodo 1
+    
+    # Robotica John Craig 3ra edicion, ejemplo 2.2 - p.29
+    v_4 = matrix_by_vector_multiplication(T2,v3)
 
-    r3 = tf.transformations.concatenate_matrices(
-            r2, tf.transformations.quaternion_matrix(
-                tf.transformations.quaternion_from_euler(0.79, 0.0, 0.79)))
+    v_4 = v_4[:(len(v_4)-1)]
 
-    T3 = tf.transformations.concatenate_matrices(
-        tf.transformations.translation_matrix((0.0,0.1,0.1)),r3)
-    '''
+    rospy.loginfo("v_4 = %s", v_4)
+
+    # Vector p4->p2
+
+    v_2 = tf.transformations.translation_from_matrix(T1)
+
+    v_2_4 = v_2 - v_4
+
+    rospy.loginfo("V2 = %s\tV2-V4 = %s",v_2,v_2_4)
+
+    # Angulo de rotacion entre el eje x de camera_frame (eje x 
+    # de robot_frame) y el origen de object_frame
+
+    D3 = tf.transformations.translation_matrix(v3)
+    
+    x_robot = matrix_by_vector_multiplication(D3,[1.0, 0.0, 0.0])
+    x_robot = matrix_by_vector_multiplication(T2,x_robot[:(len(x_robot)-1)])
+    x_robot = x_robot[:(len(x_robot)-1)]
+    
+    rospy.loginfo("x_robot = %s", x_robot)
+
+    angle = angle_between(x_robot, v_2_4)  
+    rospy.loginfo("angle = %s",angle*180/3.14159)  
+
+    #angle2 = tf.transformations.angle_between_vectors(x_robot, v_2_4)  
+    #rospy.loginfo("angle2 = %s",angle2*180/3.14159)  
+
+    # Versor normal a x y versor (producto vectorial)
+    # Es el eje de rotacion del sistema camera_frame
+
+    v_normal = np.cross(x_robot,v_2_4)
+
+    rospy.loginfo("v_normal = %s", v_normal)
+
+    # Aplico la rotacion
+
+    R5 = tf.transformations.quaternion_matrix(
+            tf.transformations.quaternion_about_axis(
+                angle,v_normal))
+
+    T4 = tf.transformations.concatenate_matrices(D3, R5)
+
+    camera_transform.transform = message_from_transform(T4)
 
     '''
     Calculate the vector pointing from the camera to the object, 
     use the dot and cross products to deduce the angle and axis
     to rotate around.
     '''
-    # Translate the camera_transform
-
-    camera_transform.transform = message_from_transform(T3)
-
-    #t_object = tf.transformations.translation_from_matrix(object_transform)
-    #t_camera = tf.transformations.translation_from_matrix(camera_transform)
-
-    # Calculate the direction of the 3 axis of camera_frame
-    x_cam = camera_transform.transform.translation.x
-    y_cam = camera_transform.transform.translation.y
-    z_cam = camera_transform.transform.translation.z
-
-    # Calculate the displacement in 3D
-    '''
-    d3 = tf.transformations.translation_matrix((0.0,0.1,0.1))
-    d2 = tf.transformations.translation_matrix((0.0,-1.0,0.0))
-    d1 = tf.transformations.translation_matrix((0.0,1.0,1.0))
-
-    d = tf.transformations.concatenate_matrices(d3, d2,d1)
-    translation = tf.transformations.translation_from_matrix(d)
-
-    v = geometry_msgs.msg.Vector3(
-        translation[0],
-        translation[1],
-        translation[2])
-    '''
-
-    x = object_transform.transform.translation.x - x_cam
-    y = object_transform.transform.translation.y - y_cam
-    z = object_transform.transform.translation.z - z_cam
-
-    # calculate the angle between 'v' and the others
-
-    angle = angle_between([x_cam,y_cam,z_cam],[x,y,z])
-
-    # Moves the tf the angles indicated
 
     br.sendTransform(camera_transform)
 
+########################################################
 
 if __name__ == '__main__':
 
