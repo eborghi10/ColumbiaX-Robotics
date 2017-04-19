@@ -7,6 +7,8 @@ import tf
 import tf2_ros
 import geometry_msgs.msg
 
+first_time = True
+
 def message_from_transform(T):
 	msg = geometry_msgs.msg.Transform()
 	q = tf.transformations.quaternion_from_matrix(T)
@@ -44,10 +46,8 @@ def angle_between(v1, v2):
 
 def matrix_by_vector_multiplication(matrix,vector):
     """Multiplication of matrix by vector"""
-    matrix_np = np.array(matrix)
-    vector_np = np.array(vector)
-    vector_np = np.append(vector_np,1)
-    return np.matmul(matrix_np, vector_np)
+    vector.append(1)
+    return [sum([vector[x]*matrix[n][x] for x in range(len(vector))]) for n in range(len(matrix))] 
 
 ########################################################
 
@@ -89,6 +89,19 @@ def publish_transforms():
     camera_transform.child_frame_id = "camera_frame"
     
     v3 = [0.0, 0.1, 0.1]
+    D3 = tf.transformations.translation_matrix(v3)
+    rospy.loginfo("\n\nD3 = %s\n", D3)
+
+    global first_time
+    if first_time == True:
+        first_time = False
+        R3 = tf.transformations.quaternion_matrix(tf.transformations.quaternion_from_euler(0,0,0))            
+    else:
+        global R5
+        R3 = R5
+
+    T3 = tf.transformations.concatenate_matrices(D3, R3)
+    rospy.loginfo("T3 = %s\n", T3)
 
     # Nodo 4 referenciado al nodo 1
     
@@ -97,7 +110,7 @@ def publish_transforms():
 
     v_4 = v_4[:(len(v_4)-1)]
 
-    rospy.loginfo("v_4 = %s", v_4)
+    rospy.loginfo("\n\nT2 = %s\n\nv_4 = %s\n", T2,v_4)
 
     # Vector p4->p2
 
@@ -105,21 +118,20 @@ def publish_transforms():
 
     v_2_4 = v_2 - v_4
 
-    rospy.loginfo("V2 = %s\tV2-V4 = %s",v_2,v_2_4)
+    rospy.loginfo("V2 = %s\n\nV2_V4 = %s\n",v_2,v_2_4)
 
     # Angulo de rotacion entre el eje x de camera_frame (eje x 
     # de robot_frame) y el origen de object_frame
-
-    D3 = tf.transformations.translation_matrix(v3)
     
-    x_robot = matrix_by_vector_multiplication(D3,[1.0, 0.0, 0.0])
+    # [1,0,0]: Versor x del camera_frame
+    x_robot = matrix_by_vector_multiplication(T3,[1.0, 0.0, 0.0])
     x_robot = matrix_by_vector_multiplication(T2,x_robot[:(len(x_robot)-1)])
     x_robot = x_robot[:(len(x_robot)-1)]
     
-    rospy.loginfo("x_robot = %s", x_robot)
+    rospy.loginfo("x_robot = %s\n", x_robot)
 
     angle = angle_between(x_robot, v_2_4)  
-    rospy.loginfo("angle = %s",angle*180/3.14159)  
+    rospy.loginfo("angle = %s\n",angle*180/3.14159)  
 
     #angle2 = tf.transformations.angle_between_vectors(x_robot, v_2_4)  
     #rospy.loginfo("angle2 = %s",angle2*180/3.14159)  
@@ -129,7 +141,7 @@ def publish_transforms():
 
     v_normal = np.cross(x_robot,v_2_4)
 
-    rospy.loginfo("v_normal = %s", v_normal)
+    rospy.loginfo("v_normal = %s\n", v_normal)
 
     # Aplico la rotacion
 
@@ -137,9 +149,10 @@ def publish_transforms():
             tf.transformations.quaternion_about_axis(
                 angle,v_normal))
 
-    T4 = tf.transformations.concatenate_matrices(D3, R5)
+    T3 = tf.transformations.concatenate_matrices(D3, R5)
+    #rospy.loginfo("\n\nT3 = %s\n\nD3 = %s\n\nR5 = %s\n", T3,D3,R5)
 
-    camera_transform.transform = message_from_transform(T4)
+    camera_transform.transform = message_from_transform(T3)
 
     '''
     Calculate the vector pointing from the camera to the object, 
