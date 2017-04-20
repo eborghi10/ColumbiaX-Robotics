@@ -94,88 +94,67 @@ def publish_transforms():
     to rotate around.
     '''
 
-    
-    v3 = [0.0, 0.1, 0.1]
-    D3 = tf.transformations.translation_matrix(v3)
-    rospy.loginfo("\n\nD3 = %s\n", D3)
-
-    '''
+    global angle
+    global x_axis
+    global p2_camera
+    global p2_robot
     global first_time
+
+    # Calculates the homogeneous matrix for camera_frame
+
+    # displacement matrix of camera_frame
+    D3 = tf.transformations.translation_matrix([0.0, 0.1, 0.1])
+    rospy.loginfo("\n\nD3 = %s\n", D3)
+    
+    # Only for the first run, we don't rotate the camera_frame
+    # because it's an unknown parameter
     if first_time == True:
         first_time = False
-        R3 = tf.transformations.quaternion_matrix(tf.transformations.quaternion_from_euler(0,0,0))            
-    else:
-        global R5
-        R3 = R5
+        R3 = tf.transformations.quaternion_matrix(tf.transformations.quaternion_from_euler(0,0,0))
 
-    T3 = tf.transformations.concatenate_matrices(D3, R3)
-    rospy.loginfo("T3 = %s\n", T3)
+	T3 = tf.transformations.concatenate_matrices(D3, R3)
+	rospy.loginfo("T3 = %s\n", T3)
 
-    # Nodo 4 referenciado al nodo 1
-    
-    # Robotica John Craig 3ra edicion, ejemplo 2.2 - p.29
-    v_4 = matrix_by_vector_multiplication(T2,v3)
+	# Calculates the origin of coordinates from object_frame
+	# with respect to camera_frame
+	
+	# the origin of coordinates of object_frame (p2) is the
+	# traslation part of the homogeneous matrix from base_frame
+	# to object_frame
+	p2 = tf.transformations.translation_from_matrix(T1)
 
-    v_4 = v_4[:(len(v_4)-1)]
+	# p2 referenced to robot_frame
+	p2_robot = matrix_by_vector_multiplication(
+		tf.transformations.inverse_matrix(T2), p2.tolist())
+	p2_robot = p2_robot[:(len(p2_robot)-1)]
 
-    rospy.loginfo("\n\nT2 = %s\n\nv_4 = %s\n", T2,v_4)
+	# p2 referenced to camera_frame
+	p2_camera = matrix_by_vector_multiplication(
+		tf.transformations.inverse_matrix(T3), p2_robot)
+	p2_camera = p2_camera[:(len(p2_camera)-1)]
 
-    # Vector p4->p2
+	# x axis of camera_frame viewed from its own frame
+	x_axis = [1,0,0]
 
-    v_2 = tf.transformations.translation_from_matrix(T1)
+	# angle difference between x axis and the origin 
+	# of object_frame
+	angle = angle_between(x_axis, p2_camera)  
+    rospy.loginfo("angle = %s\n",angle*180/3.14159)
 
-    v_2_4 = v_2 - v_4
+    # calculates the vector from which the x axis has to rotate
+    v_normal = np.cross(x_axis,p2_camera)
 
-    rospy.loginfo("V2 = %s\n\nV2_V4 = %s\n",v_2,v_2_4)
+    # with the calculated values, aply the homogeneous matrix
+    # to camera_frame
 
-    # Angulo de rotacion entre el eje x de camera_frame (eje x 
-    # de robot_frame) y el origen de object_frame
-    
-    # [1,0,0]: Versor x del camera_frame
-    x_robot = matrix_by_vector_multiplication(T3,[1.0, 0.0, 0.0])
-    x_robot = matrix_by_vector_multiplication(T2,x_robot[:(len(x_robot)-1)])
-    x_robot = x_robot[:(len(x_robot)-1)]
-    
-    rospy.loginfo("x_robot = %s\n", x_robot)
-
-    angle = angle_between(x_robot, v_2_4)  
-    rospy.loginfo("angle = %s\n",angle*180/3.14159)  
-
-    #angle2 = tf.transformations.angle_between_vectors(x_robot, v_2_4)  
-    #rospy.loginfo("angle2 = %s",angle2*180/3.14159)  
-
-    # Versor normal a x y versor (producto vectorial)
-    # Es el eje de rotacion del sistema camera_frame
-
-    v_normal = np.cross(x_robot,v_2_4)
-
-    rospy.loginfo("v_normal = %s\n", v_normal)
-
-    # Aplico la rotacion
-
-    R5 = tf.transformations.quaternion_matrix(
+    R3 = tf.transformations.quaternion_matrix(
             tf.transformations.quaternion_about_axis(
                 angle,v_normal))
 
-    T3 = tf.transformations.concatenate_matrices(D3, R5)
-    #rospy.loginfo("\n\nT3 = %s\n\nD3 = %s\n\nR5 = %s\n", T3,D3,R5)
-    '''
-    
-    '''
-    You need to find the transform of the object frame with
-    respect to the camera frame, which then needs to be aligned
-    with the x axis.
-    '''
-
-    T_inv = tf.transformations.concatenate_matrices(
-        tf.transformations.inverse_matrix(D3),
-        tf.transformations.inverse_matrix(T2), T1)
-
-    T3 = tf.transformations.concatenate_matrices(
-        D3, tf.transformations.quaternion_matrix(
-            tf.transformations.quaternion_from_matrix(T_inv)))
+    T3 = tf.transformations.concatenate_matrices(D3, R3)
     
     camera_transform.transform = message_from_transform(T3)
+    
     br.sendTransform(camera_transform)
 
 ########################################################
