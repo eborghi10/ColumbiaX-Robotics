@@ -1,0 +1,13 @@
+<launch>
+
+  <param name="robot_description" textfile="$(find baxter_description)/urdf/baxter.urdf" />
+
+  <node name="robot_sim" pkg="robot_sim" type="robot_sim_bringup" respawn="false" output="screen">
+    <param name="num_joints" value="15"/>
+  </node>
+
+  <node pkg="robot_state_publisher" type="robot_state_publisher" name="robot_state_publisher" output="screen" >
+    <remap from="joint_states" to="robot/joint_states" />
+  </node>
+
+</launch>
