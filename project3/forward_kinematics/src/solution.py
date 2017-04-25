@@ -166,7 +166,7 @@ class ForwardKinematics(object):
 
             T = tf.transformations.concatenate_matrices(T,D,R)
 
-            all_transforms = convert_to_message(T, link_names[it+1], link_names[it])
+            all_transforms.transforms.append(convert_to_message(T, link_names[it+1], link_names[it]))
 
         return all_transforms
        
