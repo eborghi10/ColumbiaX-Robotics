@@ -1,5 +1,12 @@
 # Project 3 | Robot Arms - Fordward Kinematics
 
+To test the model:
+```
+$ roslaunch robot_sim kuka_lwr_test.launch
+$ rosrun robot_sim position_command.py
+```
+
+To test the project:
 ```
 $ roslaunch robot_sim kuka_lwr.launch
 ```

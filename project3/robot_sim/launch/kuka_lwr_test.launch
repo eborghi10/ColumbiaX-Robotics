@@ -16,13 +16,12 @@
   	type="solution.py" 
   	respawn="false" 
   	output="screen"/>
-    
-  <node
-    pkg="robot_mover"
-    name="robot_mover"
-    type="mover"
-    respawn="false"
-    output="screen" />
+
+  <node 
+  	pkg="robot_state_publisher" 
+  	type="robot_state_publisher" 
+  	name="robot_state_publisher" 
+  	output="screen" />
 
   <node 
   	pkg="rviz" 

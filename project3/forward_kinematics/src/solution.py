@@ -133,8 +133,41 @@ class ForwardKinematics(object):
         # We start with the identity
         T = tf.transformations.identity_matrix()
         
-        # YOUR CODE GOES HERE
+        #rospy.loginfo("[Link Names]: %s", link_names)
         
+        #rospy.loginfo("[Joint Origins x,y,z]: %s", joints[0].origin.xyz)
+        #rospy.loginfo("[Joint Types]: %s", joints[0].type)
+        #rospy.loginfo("[Joint Names]: %s", joints[0].name)
+        #rospy.loginfo("[Joint Axis]: %s", joints[0].axis)   
+
+        #rospy.loginfo("[Joint Name Values]: %s", joint_values.name)
+        #rospy.loginfo("[Joint Position Values]: %s", joint_values.position)
+        
+        '''
+        the transform from the world to link i should be published with world_link as the parent
+        frame and link_names[i] as the child frame.
+
+        One way to complete the assignment is in iterative fashion: assuming you have compute the
+        transform from the world_link coordinate frame to link i, you just need to update that 
+        with the transform from link i to link i+1 and you now have the transform from the
+        world_link frame to link i+1.
+        '''
+
+        for it in range(len(joints)-1):
+            rospy.loginfo("[%s]: %s", it+1, joints[it+1].name)
+            rospy.loginfo("[%s]: Parent=%s, Child=%s", it+1, link_names[it], link_names[it+1])
+
+            D = tf.transformations.translation_matrix(joints[it+1].origin.xyz)
+            R = tf.transformations.quaternion_matrix(
+                tf.transformations.quaternion_from_euler(
+                    joints[it+1].origin.rpy[0],
+                    joints[it+1].origin.rpy[1],
+                    joints[it+1].origin.rpy[2]))
+
+            T = tf.transformations.concatenate_matrices(T,D,R)
+
+            all_transforms = convert_to_message(T, link_names[it+1], link_names[it])
+
         return all_transforms
        
 if __name__ == '__main__':
