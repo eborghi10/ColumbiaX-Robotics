@@ -30,7 +30,7 @@ add_library(robot_sim
   src/position_controller.cpp
 )
 
-link_directories(/opt/ros/indigo/lib/)
+link_directories(/opt/ros/kinetic/lib/)
 add_executable(robot_sim_bringup src/robot_sim_bringup.cpp)
 target_link_libraries(robot_sim_bringup ${catkin_LIBRARIES} robot_sim urdf)
 

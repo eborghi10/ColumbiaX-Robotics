@@ -2,7 +2,7 @@
 <robot xmlns:sensor="http://playerstage.sourceforge.net/gazebo/xmlschema/#sensor"
        xmlns:controller="http://playerstage.sourceforge.net/gazebo/xmlschema/#controller"
        xmlns:interface="http://playerstage.sourceforge.net/gazebo/xmlschema/#interface"
-       xmlns:xacro="http://playerstage.sourceforge.net/gazebo/xmlschema/#interface">
+       xmlns:xacro="http://www.ros.org/wiki/xacro">
 
   <xacro:include filename="$(find lwr_defs)/defs/util_defs.xml"/>
 
@@ -14,7 +14,7 @@
   <property name="arm_velocity_scale_factor" value="1"/>
 
   <!-- right is either 1 (for right arm) or -1 (for left arm) -->
-  <macro name="kuka_lwr_arm" params="parent name right *origin">
+  <xacro:macro name="kuka_lwr_arm" params="parent name right *origin">
 
     <!-- First (shoulder) element of the arm. Fixed to its parent. -->
     <joint name="${parent}_${name}_arm_base_joint" type="fixed">
@@ -495,6 +495,6 @@
       <mechanicalReduction>1.0</mechanicalReduction>
     </transmission>
 
-  </macro>
+  </xacro:macro>
 
 </robot>

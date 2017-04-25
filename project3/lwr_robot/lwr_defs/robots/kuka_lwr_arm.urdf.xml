@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="lwr">
+<robot name="lwr" xmlns:xacro="http://www.ros.org/wiki/xacro">
 
   <xacro:include filename="$(find lwr_defs)/defs/kuka_lwr_arm_defs.xml"/>
   <xacro:include filename="$(find lwr_defs)/defs/gazebo_defs.xml"/>
@@ -27,7 +27,7 @@
       <geometry>
         <box size="0.1 0.1 0.2"/>
       </geometry>
-    </collision> -->
+    </collision>
   </link> 
   
   <kuka_lwr_arm parent="world_link" name="lwr" right="1">
