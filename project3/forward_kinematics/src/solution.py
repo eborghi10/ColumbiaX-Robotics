@@ -153,21 +153,44 @@ class ForwardKinematics(object):
         world_link frame to link i+1.
         '''
 
-        for it in range(len(joints)-1):
-            rospy.loginfo("[%s]: %s", it+1, joints[it+1].name)
-            rospy.loginfo("[%s]: Parent=%s, Child=%s", it+1, link_names[it], link_names[it+1])
+        for it in range(len(joints)):
+            #rospy.loginfo("[%s]: %s", it+1, joints[it+1].name)
+            #rospy.loginfo("[%s]: Parent=%s, Child=%s", it+1, link_names[it], link_names[it+1])
 
-            D = tf.transformations.translation_matrix(joints[it+1].origin.xyz)
-            R = tf.transformations.quaternion_matrix(
-                tf.transformations.quaternion_from_euler(
-                    joints[it+1].origin.rpy[0],
-                    joints[it+1].origin.rpy[1],
-                    joints[it+1].origin.rpy[2]))
+            try:
+                index = joint_values.name.index(joints[it].name)
+                joint_value = joint_values.position[index]
+                #rospy.loginfo("[%s]: %s", index, joint_value)
+            except ValueError as e:
+                joint_value = 0.0
+                #rospy.loginfo("%s", e)
+
+            D = tf.transformations.translation_matrix(joints[it].origin.xyz)
+
+            if joints[it].type == 'fixed':
+                R = tf.transformations.quaternion_matrix(
+                    tf.transformations.quaternion_from_euler(
+                        joints[it].origin.rpy[0],
+                        joints[it].origin.rpy[1],
+                        joints[it].origin.rpy[2], 'sxyz'))
+            elif joints[it].type == 'revolute':
+                R = tf.transformations.quaternion_matrix(
+                    tf.transformations.quaternion_from_euler(
+                        joints[it].origin.rpy[0],
+                        joints[it].origin.rpy[1],
+                        joints[it].origin.rpy[2] + joint_value, 'rxyz'))
+            else :
+                R = tf.transformations.quaternion_matrix(
+                    tf.transformations.quaternion_from_euler(
+                        joints[it].origin.rpy[0],
+                        joints[it].origin.rpy[1],
+                        joints[it].origin.rpy[2]))
 
             T = tf.transformations.concatenate_matrices(T,D,R)
 
-            all_transforms.transforms.append(convert_to_message(T, link_names[it+1], link_names[it]))
+            all_transforms.transforms.append(convert_to_message(T, link_names[it], 'world_link'))
 
+        #rospy.loginfo("all_transforms: %s", all_transforms.transforms)
         return all_transforms
        
 if __name__ == '__main__':
