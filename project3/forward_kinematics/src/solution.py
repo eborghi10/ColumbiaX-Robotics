@@ -168,25 +168,26 @@ class ForwardKinematics(object):
             D = tf.transformations.translation_matrix(joints[it].origin.xyz)
 
             if joints[it].type == 'fixed':
-                R = tf.transformations.quaternion_matrix(
+                R_J = tf.transformations.quaternion_matrix(
                     tf.transformations.quaternion_from_euler(
-                        joints[it].origin.rpy[0],
-                        joints[it].origin.rpy[1],
-                        joints[it].origin.rpy[2], 'sxyz'))
+                        joint_value, 0.0, 0.0, 'sxyz'))
             elif joints[it].type == 'revolute':
-                R = tf.transformations.quaternion_matrix(
+                R_J = tf.transformations.quaternion_matrix(
                     tf.transformations.quaternion_from_euler(
-                        joints[it].origin.rpy[0],
-                        joints[it].origin.rpy[1],
-                        joints[it].origin.rpy[2] + joint_value, 'rxyz'))
+                        0.0, 0.0, joint_value, 'rxyz'))
             else :
-                R = tf.transformations.quaternion_matrix(
+                rospy.loginfo("\n[HERE]\n")
+                R_J = tf.transformations.quaternion_matrix(
+                    tf.transformations.quaternion_from_euler(
+                        0.0, 0.0, 0.0))
+
+            R_L = tf.transformations.quaternion_matrix(
                     tf.transformations.quaternion_from_euler(
                         joints[it].origin.rpy[0],
                         joints[it].origin.rpy[1],
                         joints[it].origin.rpy[2]))
 
-            T = tf.transformations.concatenate_matrices(T,D,R)
+            T = tf.transformations.concatenate_matrices(T,D,R_L,R_J)
 
             all_transforms.transforms.append(convert_to_message(T, link_names[it], 'world_link'))
 
