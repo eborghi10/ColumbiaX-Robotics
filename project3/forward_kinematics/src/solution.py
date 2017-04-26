@@ -157,39 +157,32 @@ class ForwardKinematics(object):
             #rospy.loginfo("[%s]: %s", it+1, joints[it+1].name)
             #rospy.loginfo("[%s]: Parent=%s, Child=%s", it+1, link_names[it], link_names[it+1])
 
-            try:
-                index = joint_values.name.index(joints[it].name)
-                joint_value = joint_values.position[index]
-                #rospy.loginfo("[%s]: %s", index, joint_value)
-            except ValueError as e:
-                joint_value = 0.0
-                #rospy.loginfo("%s", e)
-
+            # translation part respect of the previous frame
             D = tf.transformations.translation_matrix(joints[it].origin.xyz)
 
-            if joints[it].type == 'fixed':
-                R_J = tf.transformations.quaternion_matrix(
-                    tf.transformations.quaternion_from_euler(
-                        joint_value, 0.0, 0.0, 'sxyz'))
-            elif joints[it].type == 'revolute':
-                R_J = tf.transformations.quaternion_matrix(
-                    tf.transformations.quaternion_from_euler(
-                        0.0, 0.0, joint_value, 'rxyz'))
-            else :
-                rospy.loginfo("\n[HERE]\n")
-                R_J = tf.transformations.quaternion_matrix(
-                    tf.transformations.quaternion_from_euler(
-                        0.0, 0.0, 0.0))
+            # Obtain current joint value 
+            try:
+                index = joint_values.name.index(joints[it].name)
+                q = joint_values.position[index]
 
-            R_L = tf.transformations.quaternion_matrix(
-                    tf.transformations.quaternion_from_euler(
-                        joints[it].origin.rpy[0],
-                        joints[it].origin.rpy[1],
-                        joints[it].origin.rpy[2]))
+            except ValueError as e:
+                q = 0.0
+                #rospy.loginfo("%s", e)
+            
+            if joints[it].type == 'revolute':
+                # Obtain the rotation axis of the frame
+                axis = joints[it].axis
+                # Rotate q radians  (or translate q meters) about a single axis
+                R = tf.transformations.quaternion_matrix(
+                    tf.transformations.quaternion_about_axis(
+                        q, axis))
+            else :  # fixed joint
+                R = tf.transformations.identity_matrix()
 
-            T = tf.transformations.concatenate_matrices(T,D,R_L,R_J)
+            T = tf.transformations.concatenate_matrices(T,D,R)
 
-            all_transforms.transforms.append(convert_to_message(T, link_names[it], 'world_link'))
+            all_transforms.transforms.append(
+                convert_to_message(T, link_names[it], 'world_link'))
 
         #rospy.loginfo("all_transforms: %s", all_transforms.transforms)
         return all_transforms

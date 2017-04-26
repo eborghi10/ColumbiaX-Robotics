@@ -15,7 +15,7 @@ $ roslaunch robot_sim kuka_lwr.launch
 
 The project implements the forward kinematics for a robot arm defined in a URDF file and running in a ROS environment.
 
-The setup contains a "simulated" robot that _continuously publishes its own joint values_. You can check that the robot is indeed publishing its joint values by using the `rostopic echo /joint_values` command. However, that is not enough for the robot to be correctly displayed: a forward kinematics module must use the joint values to compute the transforms from the world coordinate frame to each link of the robot.
+The setup contains a "simulated" robot that _continuously publishes its own joint values_. You can check that the robot is indeed publishing its joint values by using the `rostopic echo /joint_states` command. However, that is not enough for the robot to be correctly displayed: a forward kinematics module must use the joint values to compute the transforms from the world coordinate frame to each link of the robot.
 
 The `ForwardsKinematics` class subscribes to the topic `joint_states` and publishes transforms to `tf`. It also loads a URDF description of the robot from the ROS parameter server.
 
