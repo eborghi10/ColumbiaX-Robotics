@@ -1,0 +1,25 @@
+<?xml version="1.0"?>
+<package>
+  <name>cartesian_control</name>
+  <version>0.0.0</version>
+  <description>The cartesian_control package</description>
+
+  <maintainer email="matei@todo.todo">matei</maintainer>
+
+  <license>TODO</license>
+
+  <buildtool_depend>catkin</buildtool_depend>
+
+  <build_depend>interactive_markers</build_depend>
+  <build_depend>rospy</build_depend>
+  <build_depend>sensor_msgs</build_depend>
+  <build_depend>tf</build_depend>
+  <build_depend>urdfdom_py</build_depend>
+
+  <run_depend>interactive_markers</run_depend>
+  <run_depend>rospy</run_depend>
+  <run_depend>sensor_msgs</run_depend>
+  <run_depend>tf</run_depend>
+  <run_depend>urdfdom_py</run_depend>
+  
+</package>
