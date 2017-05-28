@@ -9,6 +9,9 @@ $ rosrun robot_sim position_command.py
 To test the project:
 ```
 $ roslaunch robot_sim kuka_lwr.launch
+$ rosrun cartesian_control cartesian_control.py
+$ rosrun cartesian_control marker_control.py
+$ rosrun cartesian_control grader.py
 ```
 
 ## Description

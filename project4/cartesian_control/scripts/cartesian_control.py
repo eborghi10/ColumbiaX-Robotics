@@ -29,6 +29,12 @@ def cartesian_control(joint_transforms, b_T_ee_current, b_T_ee_desired,
     dq = numpy.zeros(num_joints)
     #-------------------- Fill in your code here ---------------------------
 
+    # 
+
+    if red_control == True:
+    	# Implement the null-space control
+    	pass
+
     #----------------------------------------------------------------------
     return dq
     
