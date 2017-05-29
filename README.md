@@ -9,3 +9,5 @@
 4) **marker_publisher**: used in _project2_solution_ to visualize the transformations. It's invoked by _project2_solution_.
 
 5) **project3**: packages that analyze the forward dynamics of a Kuka LBR iiwa arm.
+
+6) **project4/cartesian_control**: also with the package `robot_sim` from _project3_, uses the differential kinematics of the Kuka LBR iiwa robot arm.

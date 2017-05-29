@@ -137,7 +137,7 @@ class CartesianGrader(object):
         self.server.applyChanges()
 
     def control_marker_feedback(self, feedback):
-        print "When running the grader, the interactive marker is only meant to display the taret pose. Interacting with it has no effect"
+        print "When running the grader, the interactive marker is only meant to display the target pose. Interacting with it has no effect"
 
     def update_marker(self, T):
         self.server.setPose("cg_marker", convert_to_message(T))

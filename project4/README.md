@@ -1,22 +1,15 @@
 # Project 4 | Robot Arms - Cartesian Control
 
-To test the model:
 ```
-$ roslaunch robot_sim kuka_lwr_test.launch
-$ rosrun robot_sim position_command.py
-```
-
-To test the project:
-```
-$ roslaunch robot_sim kuka_lwr.launch
+$ roslaunch cartesian_control cartesian_exec.launch
 $ rosrun cartesian_control cartesian_control.py
-$ rosrun cartesian_control marker_control.py
+
 $ rosrun cartesian_control grader.py
 ```
 
 ## Description
 
-In this project it will be applied the topics learned about differential kinematics, the numerical computation of the Jacobian and singularity avoidance. The aim of this project is to write a Cartesian controller for the same 7-joint robot arm that was used in the last project. This controller will allow the user to interactively move the end-effector by dragging around an interactive marker.
+In this project it will be applied the topics learned about differential kinematics, the numerical computation of the Jacobian and singularity avoidance. The aim of this project is to write a Cartesian controller for the same 7-joint robot arm that was used in the last project. This controller will allow the user to **interactively move the end-effector** by dragging around an interactive marker.
 
 As the robot has 7 joints, it has a redundancy and it can also be implement the null-space control. In this assignment, the goal of null-space control is to change the value of the first joint (thus turning the "elbow" of the robot) without affecting the pose of the end-effector (specified above as a primary goal).
 

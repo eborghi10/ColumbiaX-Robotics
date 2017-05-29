@@ -29,10 +29,55 @@ def cartesian_control(joint_transforms, b_T_ee_current, b_T_ee_desired,
     dq = numpy.zeros(num_joints)
     #-------------------- Fill in your code here ---------------------------
 
-    # 
+    # Prints the arguments for debugging
+    # joint_transforms: list containing the transforms of all the joints with
+    # respect to the base frame
+    rospy.loginfo('\n\njoint_transforms\n\n %s\n\n', joint_transforms)
+    rospy.loginfo('\n\nb_T_ee_current\n\n %s\n\n', b_T_ee_current)
+    rospy.loginfo('\n\nb_T_ee_desired\n\n %s\n\n', b_T_ee_desired)
+
+    # compute the desired change in end-effector pose from b_T_ee_current to b_T_ee_desired
+    delta_x = tf.transformations.translation_from_matrix(b_T_ee_current) - tf.transformations.translation_from_matrix(b_T_ee_desired)
+    rospy.loginfo('\n\ndelta_x%s\n\n', delta_x)
+
+    current_angle, current_axis = rotation_from_matrix(b_T_ee_current)
+    desired_angle, desired_axis = rotation_from_matrix(b_T_ee_desired)
+
+    '''
+    https://courses.edx.org/courses/course-v1:ColumbiaX+CSMM.103x+1T2017/discussion/forum/61ec2db861132ac377a4e036455725759857558e/threads/5928eb391305f108260008bc
+    '''
+
+    # convert the desired change into a desired end-effector velocity
+    # (the simplest form is to use a proportional controller)
+    x_dot = 10 * delta_x
+
+    # normalize the desired change
+    x_dot_norm = x_dot / max(x_dot)
+
+    # numerically compute the robot Jacobian. For each joint compute the matrix
+    # that relates the velocity of that joint to the velocity of the end-effector
+    # in its own coordinate frame. Assemble the last column of all these matrices
+    # to construct the Jacobian.
+
+    # Compute the pseudo-inverse of the Jacobian. Make sure to avoid numerical
+    # issues that can arise from small singular values
+
+    # Use the pseudo-inverse of the Jacobian to map from end-effector velocity to
+    # joint velocities. You might want to scale these joint velocities such that
+    # their norm (or their largest element) is lower than a certain threshold
+
+
 
     if red_control == True:
-    	# Implement the null-space control
+    	# implements the null-space control on the first joint
+
+        # find a joint velocity that brings the joint closer to the secondary objective.
+
+        # use the Jacobian and its pseudo-inverse to project this velocity into the
+        # Jacobian nullspace. Be careful to use the 'exact' version of the Jacobian
+        # pseudo-inverse, not its 'safe' version. 
+
+        #Then add the result to the joint velocities obtained for the primary objective
     	pass
 
     #----------------------------------------------------------------------
