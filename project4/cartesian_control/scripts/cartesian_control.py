@@ -28,45 +28,92 @@ def cartesian_control(joint_transforms, b_T_ee_current, b_T_ee_desired,
     num_joints = len(joint_transforms)
     dq = numpy.zeros(num_joints)
     #-------------------- Fill in your code here ---------------------------
-
+    rospy.loginfo('\n\nnum_joints\t%s\n\n', num_joints)
     # Prints the arguments for debugging
     # joint_transforms: list containing the transforms of all the joints with
     # respect to the base frame
-    rospy.loginfo('\n\njoint_transforms\n\n %s\n\n', joint_transforms)
-    rospy.loginfo('\n\nb_T_ee_current\n\n %s\n\n', b_T_ee_current)
-    rospy.loginfo('\n\nb_T_ee_desired\n\n %s\n\n', b_T_ee_desired)
+    #rospy.loginfo('\n\njoint_transforms\n\n %s\n\n', joint_transforms)
+    #rospy.loginfo('\n\nb_T_ee_current\n\n %s\n\n', b_T_ee_current)
+    #rospy.loginfo('\n\nb_T_ee_desired\n\n %s\n\n', b_T_ee_desired)
 
     # compute the desired change in end-effector pose from b_T_ee_current to b_T_ee_desired
+    
+    # DX = inv(b_T_ee_current) * b_T_ee_Desired
+
     delta_x = tf.transformations.translation_from_matrix(b_T_ee_current) - tf.transformations.translation_from_matrix(b_T_ee_desired)
-    rospy.loginfo('\n\ndelta_x%s\n\n', delta_x)
+    rospy.loginfo('\n\nb_T_ee_current\n\n%s\n\nb_T_ee_desired\n\n%s\n\ndelta_x\t%s\n\n', b_T_ee_current, b_T_ee_desired, delta_x)
 
     current_angle, current_axis = rotation_from_matrix(b_T_ee_current)
     desired_angle, desired_axis = rotation_from_matrix(b_T_ee_desired)
+    rospy.loginfo('\n\ncurrent_angle\t%s\n\ncurrent_axis\t%s\n\n', current_angle, current_axis)
+    rospy.loginfo('\n\ndesired_angle\t%s\n\ndesired_axis\t%s\n\n', desired_angle, desired_axis)
+
+    # TODO: AVOID ROTATION CALCULATIONS, FOR NOW...
 
     '''
     https://courses.edx.org/courses/course-v1:ColumbiaX+CSMM.103x+1T2017/discussion/forum/61ec2db861132ac377a4e036455725759857558e/threads/5928eb391305f108260008bc
     '''
 
+    # V_ee
+    # To obtain ee_R_b = (b_R_ee)⁻¹ = (b_R_ee).T because rotation matrices are orthogonal.
+    # Extract rotation of b_T_ee_current and Transpose.
+    # I used 'sxyz' instead for euler_from_matrix
+
     # convert the desired change into a desired end-effector velocity
-    # (the simplest form is to use a proportional controller)
-    x_dot = 10 * delta_x
+    # (the simplest form is to use a PROPORTIONAL CONTROLLER)
+    proportional_gain = 1000
+    x_dot = proportional_gain * delta_x
 
     # normalize the desired change
-    x_dot_norm = x_dot / max(x_dot)
+    # https://stackoverflow.com/a/27903986
+    x_dot_norm = x_dot #/ max(x_dot.min(), x_dot.max(), key=abs)
+    rospy.loginfo('\n\nx_dot_norm\t%s\n\n', x_dot_norm)
 
     # numerically compute the robot Jacobian. For each joint compute the matrix
     # that relates the velocity of that joint to the velocity of the end-effector
     # in its own coordinate frame. Assemble the last column of all these matrices
     # to construct the Jacobian.
 
+    # TODO: IMPLEMENT
+    # rotation: j_T_ee = (b_T_j)⁻¹*b_T_ee
+
+    t1 = tf.transformations.translation_from_matrix(joint_transforms[1])
+    t2 = tf.transformations.translation_from_matrix(joint_transforms[2])
+    t3 = tf.transformations.translation_from_matrix(joint_transforms[3])
+    t4 = tf.transformations.translation_from_matrix(joint_transforms[4])
+    t5 = tf.transformations.translation_from_matrix(joint_transforms[5])
+    t6 = tf.transformations.translation_from_matrix(joint_transforms[6])
+
+    # J = [V_0[:,5]*dq[0] ... V_n-1[:,5]*dq[n-1]]
+
+    # This tells you what a specific joint is going to do to the end effector,
+    # in the reference frame of the joint
+    # take the inverse of b_T_j = j_T_b and then do j_T_b.b_T_ee = j_T_ee.
+
+    # ee_T_j = dot(ee_T_b, ith joint(b_T_j :: joint_transforms :: from_base_to_joint))
+    # The rotation part is multiplied by S_matrix(translation part)
+    # -> get the last column and put into V_j
+    J = numpy.vstack((
+    	numpy.cross(x_dot_norm - t1, t1),
+    	numpy.cross(x_dot_norm - t2, t2),
+    	numpy.cross(x_dot_norm - t3, t3),
+    	numpy.cross(x_dot_norm - t4, t4),
+    	numpy.cross(x_dot_norm - t5, t5),
+    	numpy.cross(x_dot_norm - t6, t6))).T
+    rospy.loginfo('\n\nJacobian\n\n%s\n\n', J)
+	
     # Compute the pseudo-inverse of the Jacobian. Make sure to avoid numerical
     # issues that can arise from small singular values
+    J_pinv = numpy.linalg.pinv(J, rcond=1e-15)
+    rospy.loginfo('\n\nJacobian Pseudo-inverse\n\n%s\n\n', J_pinv)
 
     # Use the pseudo-inverse of the Jacobian to map from end-effector velocity to
     # joint velocities. You might want to scale these joint velocities such that
     # their norm (or their largest element) is lower than a certain threshold
 
-
+    # dq = J_pinv * V_ee
+    dq = numpy.dot(J_pinv, x_dot_norm)
+    rospy.loginfo('\n\ndq\n\n%s\n\n', dq)
 
     if red_control == True:
     	# implements the null-space control on the first joint
