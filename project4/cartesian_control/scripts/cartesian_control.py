@@ -40,33 +40,39 @@ def cartesian_control(joint_transforms, b_T_ee_current, b_T_ee_desired,
     
     # DX = inv(b_T_ee_current) * b_T_ee_Desired
 
-    delta_x = tf.transformations.translation_from_matrix(b_T_ee_current) - tf.transformations.translation_from_matrix(b_T_ee_desired)
-    rospy.loginfo('\n\nb_T_ee_current\n\n%s\n\nb_T_ee_desired\n\n%s\n\ndelta_x\t%s\n\n', b_T_ee_current, b_T_ee_desired, delta_x)
+    b_t_ee = tf.transformations.translation_from_matrix(b_T_ee_current) - tf.transformations.translation_from_matrix(b_T_ee_desired)
+    rospy.loginfo('\n\nb_t_ee\t%s\n\n', b_t_ee)
 
-    current_angle, current_axis = rotation_from_matrix(b_T_ee_current)
-    desired_angle, desired_axis = rotation_from_matrix(b_T_ee_desired)
-    rospy.loginfo('\n\ncurrent_angle\t%s\n\ncurrent_axis\t%s\n\n', current_angle, current_axis)
-    rospy.loginfo('\n\ndesired_angle\t%s\n\ndesired_axis\t%s\n\n', desired_angle, desired_axis)
+    angle, axis = rotation_from_matrix(b_T_ee_current)
+    rospy.loginfo('\n\nangle\t%s\taxis\t%s\n\n', angle,axis)
+    b_R_ee = numpy.dot(angle,axis)
+    rospy.loginfo('\n\nb_R_ee\t%s\n\n', b_R_ee)
 
-    # TODO: AVOID ROTATION CALCULATIONS, FOR NOW...
+    angle2, axis2 = rotation_from_matrix(b_T_ee_desired)
+    rospy.loginfo('\n\nangle2\t%s\taxis2\t%s\n\n', angle2,axis2)
+    b_R_ee_2 = numpy.dot(angle2,axis2)
+    rospy.loginfo('\n\nb_R_ee_2\t%s\n\n', b_R_ee_2)
+
+    # TODO: Can be done in one step?
+    b_R_ee = b_R_ee - b_R_ee_2
 
     '''
     https://courses.edx.org/courses/course-v1:ColumbiaX+CSMM.103x+1T2017/discussion/forum/61ec2db861132ac377a4e036455725759857558e/threads/5928eb391305f108260008bc
     '''
 
     # V_ee
-    # To obtain ee_R_b = (b_R_ee)⁻¹ = (b_R_ee).T because rotation matrices are orthogonal.
+    # To obtain ee_R_b = (b_R_ee)^-1 = (b_R_ee).T because rotation matrices are orthogonal.
     # Extract rotation of b_T_ee_current and Transpose.
     # I used 'sxyz' instead for euler_from_matrix
 
     # convert the desired change into a desired end-effector velocity
     # (the simplest form is to use a PROPORTIONAL CONTROLLER)
     proportional_gain = 1000
-    x_dot = proportional_gain * delta_x
+    x_dot = proportional_gain * b_t_ee
 
     # normalize the desired change
-    # https://stackoverflow.com/a/27903986
-    x_dot_norm = x_dot #/ max(x_dot.min(), x_dot.max(), key=abs)
+    # OTHER ALTERNATIVE: https://stackoverflow.com/a/27903986
+    x_dot_norm = x_dot / sum(x_dot)
     rospy.loginfo('\n\nx_dot_norm\t%s\n\n', x_dot_norm)
 
     # numerically compute the robot Jacobian. For each joint compute the matrix
@@ -75,14 +81,7 @@ def cartesian_control(joint_transforms, b_T_ee_current, b_T_ee_desired,
     # to construct the Jacobian.
 
     # TODO: IMPLEMENT
-    # rotation: j_T_ee = (b_T_j)⁻¹*b_T_ee
-
-    t1 = tf.transformations.translation_from_matrix(joint_transforms[1])
-    t2 = tf.transformations.translation_from_matrix(joint_transforms[2])
-    t3 = tf.transformations.translation_from_matrix(joint_transforms[3])
-    t4 = tf.transformations.translation_from_matrix(joint_transforms[4])
-    t5 = tf.transformations.translation_from_matrix(joint_transforms[5])
-    t6 = tf.transformations.translation_from_matrix(joint_transforms[6])
+    # rotation: j_T_ee = (b_T_j)^-1*b_T_ee
 
     # J = [V_0[:,5]*dq[0] ... V_n-1[:,5]*dq[n-1]]
 
@@ -93,6 +92,10 @@ def cartesian_control(joint_transforms, b_T_ee_current, b_T_ee_desired,
     # ee_T_j = dot(ee_T_b, ith joint(b_T_j :: joint_transforms :: from_base_to_joint))
     # The rotation part is multiplied by S_matrix(translation part)
     # -> get the last column and put into V_j
+    for i in num_joints:
+    	numpy.dot(-tf.transformations.rotation_from_matrix(joint_transforms[num_joints]),
+    		S_matrix(tf.transformations.translation_from_matrix(joint_transforms[num_joints])))
+
     J = numpy.vstack((
     	numpy.cross(x_dot_norm - t1, t1),
     	numpy.cross(x_dot_norm - t2, t2),
