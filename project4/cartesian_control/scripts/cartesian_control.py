@@ -67,7 +67,7 @@ def cartesian_control(joint_transforms, b_T_ee_current, b_T_ee_desired,
 
     # convert the desired change into a desired end-effector velocity
     # (the simplest form is to use a PROPORTIONAL CONTROLLER)
-    proportional_gain = 1000
+    proportional_gain = 1#000
     x_dot = proportional_gain * b_t_ee
 
     # normalize the desired change
@@ -92,17 +92,26 @@ def cartesian_control(joint_transforms, b_T_ee_current, b_T_ee_desired,
     # ee_T_j = dot(ee_T_b, ith joint(b_T_j :: joint_transforms :: from_base_to_joint))
     # The rotation part is multiplied by S_matrix(translation part)
     # -> get the last column and put into V_j
-    for i in num_joints:
-    	numpy.dot(-tf.transformations.rotation_from_matrix(joint_transforms[num_joints]),
-    		S_matrix(tf.transformations.translation_from_matrix(joint_transforms[num_joints])))
+    J = numpy.empty((6, 0))
+    for i in range(num_joints):
+        T = joint_transforms[i]
+        S = S_matrix(tf.transformations.translation_from_matrix(T))
+        
+        #rospy.loginfo('\n\n[1]\t%s\n\n', T[0][:3])
+        #rospy.loginfo('\n\n[2]\t%s\n\n', S[0][2])
+        #rospy.loginfo('\n\n[3]\t%s\n\n', T[0][:3]*S[0][2])
+    	vj = numpy.array([
+            sum(-T[0][:3] * S[0][2]),
+            sum(-T[1][:3] * S[1][2]),
+            sum(-T[2][:3] * S[2][2]),
+            T[0][2],
+            T[1][2],
+            T[2][2]])
 
-    J = numpy.vstack((
-    	numpy.cross(x_dot_norm - t1, t1),
-    	numpy.cross(x_dot_norm - t2, t2),
-    	numpy.cross(x_dot_norm - t3, t3),
-    	numpy.cross(x_dot_norm - t4, t4),
-    	numpy.cross(x_dot_norm - t5, t5),
-    	numpy.cross(x_dot_norm - t6, t6))).T
+        rospy.loginfo('\n\nvj\t%s\n\n', vj)
+
+        J = numpy.column_stack((J, vj)) 
+
     rospy.loginfo('\n\nJacobian\n\n%s\n\n', J)
 	
     # Compute the pseudo-inverse of the Jacobian. Make sure to avoid numerical
@@ -115,8 +124,9 @@ def cartesian_control(joint_transforms, b_T_ee_current, b_T_ee_desired,
     # their norm (or their largest element) is lower than a certain threshold
 
     # dq = J_pinv * V_ee
-    dq = numpy.dot(J_pinv, x_dot_norm)
-    rospy.loginfo('\n\ndq\n\n%s\n\n', dq)
+    #q = numpy.dot(J_pinv, x_dot_norm)
+    #rospy.loginfo('\n\ndq\n\n%s\n\n', dq)
+    dq = [1,2,3,4,5,6]
 
     if red_control == True:
     	# implements the null-space control on the first joint
