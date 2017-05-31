@@ -38,27 +38,23 @@ def cartesian_control(joint_transforms, b_T_ee_current, b_T_ee_desired,
 
     # compute the desired change in end-effector pose from b_T_ee_current to b_T_ee_desired
     
-    ee_T_b_current = tf.transformations.inverse_matrix(b_T_ee_current)
-    b_T_ee = numpy.dot(ee_T_b_current, b_T_ee_desired)
-    rospy.loginfo('\n\nM :\t%s\n\n', b_T_ee)
+    ee_T_b = tf.transformations.inverse_matrix(b_T_ee_current)
+    ee_T_ee = numpy.dot(ee_T_b, b_T_ee_desired)
+    rospy.loginfo('\n\nb_T_ee :\n\n%s\n\n', ee_T_ee)
 
-    b_t_ee = tf.transformations.translation_from_matrix(b_T_ee)
+    b_t_ee = tf.transformations.translation_from_matrix(ee_T_ee)
     rospy.loginfo('\n\nTranslation\t%s\n\n', b_t_ee)
 
-    b_R_ee = b_T_ee[:3,:3]
-    rospy.loginfo('\n\nRotation\t%s\n\n', b_R_ee)
+    b_R_ee = ee_T_ee[:3,:3]
+    rospy.loginfo('\n\nRotation\n\n%s\n\n', b_R_ee)
 
-    angle, axis = rotation_from_matrix(b_T_ee)
+    angle, axis = rotation_from_matrix(ee_T_ee)
     rospy.loginfo('\n\nangle\t%s\t\taxis\t%s\n\n', angle,axis)
     ROT = numpy.dot(angle,axis)
     rospy.loginfo('\n\nROT\t%s\n\n', ROT)
 
     ee_R_b = tf.transformations.inverse_matrix(b_R_ee)
     rospy.loginfo('\n\nInverse matrix :\n\n%s\n\n', ee_R_b)
-
-    # Change of the end-effector in the base coordinate frame
-    delta_X = numpy.append(b_t_ee, ROT)
-    rospy.loginfo('\n\nDelta X\t%s\n\n', delta_X)
 
     # To obtain ee_R_b = (b_R_ee)^-1 = (b_R_ee).T because rotation matrices are orthogonal.
     #ee_R_b_trans = b_R_ee.T
@@ -76,15 +72,23 @@ def cartesian_control(joint_transforms, b_T_ee_current, b_T_ee_desired,
     # convert the desired change into a desired end-effector velocity
     # (the simplest form is to use a PROPORTIONAL CONTROLLER)
 
+    # Change of the end-effector in the base coordinate frame
+    lin_gain = 1
+    rot_gain = 1
+
+    delta_X = numpy.append(b_t_ee * lin_gain, ROT * rot_gain)
+    rospy.loginfo('\n\nDelta X\t%s\n\n', delta_X)
+
     # velocity controller in end-effector space
-    proportional_gain = 1#000
+    proportional_gain = 1
     x_dot = proportional_gain * delta_X
 
     # normalize the desired change
     # OTHER ALTERNATIVE: https://stackoverflow.com/a/27903986
+    '''
     if numpy.linalg.norm(x_dot) > 1.0:
-        x_dot /= sum(x_dot)
-
+        x_dot /= max(x_dot)
+	'''
     rospy.loginfo('\n\nx_dot\t%s\n\n', x_dot)
 
     # numerically compute the robot Jacobian. For each joint compute the matrix
@@ -104,63 +108,70 @@ def cartesian_control(joint_transforms, b_T_ee_current, b_T_ee_desired,
     #  matrix that relates the velocity of that joint to the velocity of 
     # the end-effector in its own coordinate frame
     J = numpy.empty((6, 0))
-    #b_T_j = numpy.ones((0,0))
+    b_T_j = numpy.empty((0,0))
     for j in range(num_joints):
-        '''
+        # b_T_j (i.e. from base to joint)
         if b_T_j.size == 0:
             b_T_j = joint_transforms[j]
         else:
             b_T_j = numpy.dot(b_T_j, joint_transforms[j])
         #rospy.loginfo('\n\n[b_T_j]\n\n%s\n\n', b_T_j)
-        '''
-        b_T_j = joint_transforms[j]
+        
         # Transformation to obtain the velocity in its own coordinate frame
         j_T_b = tf.transformations.inverse_matrix(b_T_j)
-        j_R_b = j_T_b[:3,:3]
+        j_T_ee = numpy.dot(j_T_b, b_T_ee_current)
+        ee_T_j = tf.transformations.inverse_matrix(j_T_ee)
+        ee_R_j = ee_T_j[:3,:3]
 
-        S = S_matrix(tf.transformations.translation_from_matrix(b_T_j))
+        j_t_ee = tf.transformations.translation_from_matrix(j_T_ee)
+        S = S_matrix(j_t_ee)
         
         Vj = numpy.append(
             numpy.append(
-                j_R_b,
-                numpy.dot(-j_R_b, S),
+                ee_R_j,
+                numpy.dot(-ee_R_j, S),
                 axis=1), 
             numpy.append(
                 numpy.zeros([3,3]),
-                j_R_b,
+                ee_R_j,
                 axis=1), 
             axis=0)
 
+        # Assuming that all the joints are revolute, we only use the z component
         J = numpy.column_stack((J, Vj[:,5])) 
 
     ##rospy.loginfo('\n\nJacobian\n\n%s\n\n', J)
 	
     # Compute the pseudo-inverse of the Jacobian. Make sure to avoid numerical
     # issues that can arise from small singular values
-    J_pinv = numpy.linalg.pinv(J, rcond=1e-8)
-    ##rospy.loginfo('\n\nJacobian Pseudo-inverse\n\n%s\n\n', J_pinv)
+    J_pinv = numpy.linalg.pinv(J, rcond=1e-2)
+    rospy.loginfo('\n\nJacobian Pseudo-inverse\n\n%s\n\n', J_pinv)
 
     # Use the pseudo-inverse of the Jacobian to map from end-effector velocity to
     # joint velocities. You might want to scale these joint velocities such that
     # their norm (or their largest element) is lower than a certain threshold
-
+    '''
+    ee_R_b = tf.transformations.rotation_matrix(angle, axis)
+    ee_R_b = ee_R_b[:3,:3]
+    rospy.loginfo('\n\nee_R_b\n\n%s\n\n', ee_R_b)
+	'''
     V_ee = numpy.dot(
-        numpy.append(
-            numpy.append(
-                ee_R_b,
-                numpy.zeros([3,3]),
-                axis=0),
-            numpy.append(
-                numpy.zeros([3,3]),
-                ee_R_b,
-                axis=0),
-            axis=1), 
-        x_dot)
+	    numpy.append(
+	        numpy.append(
+	            ee_R_b,
+	            numpy.zeros([3,3]),
+	            axis=0),
+	        numpy.append(
+	            numpy.zeros([3,3]),
+	            ee_R_b,
+	            axis=0),
+	        axis=1), 
+	    x_dot)
     rospy.loginfo('\n\n[Vee]\t%s\n\n', V_ee)
 
-    # map from end-effector velocity to joint velocities
+    # map from end-effector velocity to joint velocities (angular in the z axis for all joints)
     dq = numpy.dot(J_pinv, V_ee)
-    ##rospy.loginfo('\n\ndq\n\n%s\n\n', dq)
+    rospy.loginfo('\n\ndq\n\n%s\n\n', dq)
 
     if red_control == True:
     	# implements the null-space control on the first joint
@@ -173,10 +184,10 @@ def cartesian_control(joint_transforms, b_T_ee_current, b_T_ee_desired,
 
         #Then add the result to the joint velocities obtained for the primary objective
     	pass
-
-    if numpy.linalg.norm(dq) > 10.0:
-        dq /= sum(dq) 
-
+    '''
+    if numpy.linalg.norm(dq) > 1.0:
+        dq /= max(dq) 
+	'''
     #----------------------------------------------------------------------
     return dq
     
