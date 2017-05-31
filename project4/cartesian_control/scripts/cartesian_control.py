@@ -75,6 +75,8 @@ def cartesian_control(joint_transforms, b_T_ee_current, b_T_ee_desired,
 
     # convert the desired change into a desired end-effector velocity
     # (the simplest form is to use a PROPORTIONAL CONTROLLER)
+
+    # velocity controller in end-effector space
     proportional_gain = 1#000
     x_dot = proportional_gain * delta_X
 
@@ -99,32 +101,35 @@ def cartesian_control(joint_transforms, b_T_ee_current, b_T_ee_desired,
     # in the reference frame of the joint
     # take the inverse of b_T_j = j_T_b and then do j_T_b.b_T_ee = j_T_ee.
 
+    #  matrix that relates the velocity of that joint to the velocity of 
+    # the end-effector in its own coordinate frame
     J = numpy.empty((6, 0))
-    for i in range(num_joints):
-
-        T = joint_transforms[i]
-
+    #b_T_j = numpy.ones((0,0))
+    for j in range(num_joints):
+        '''
+        if b_T_j.size == 0:
+            b_T_j = joint_transforms[j]
+        else:
+            b_T_j = numpy.dot(b_T_j, joint_transforms[j])
+        #rospy.loginfo('\n\n[b_T_j]\n\n%s\n\n', b_T_j)
+        '''
+        b_T_j = joint_transforms[j]
         # Transformation to obtain the velocity in its own coordinate frame
-        j_T_b = tf.transformations.inverse_matrix(T)
+        j_T_b = tf.transformations.inverse_matrix(b_T_j)
         j_R_b = j_T_b[:3,:3]
 
-        S = S_matrix(tf.transformations.translation_from_matrix(T))
+        S = S_matrix(tf.transformations.translation_from_matrix(b_T_j))
         
-        Vj_1 = numpy.append(
-            j_R_b,
-            numpy.dot(-j_R_b, S),
-            axis=1)
-
-        #rospy.loginfo('\n\n[Vj 1]\n\n%s\n\n', Vj_1)
-
-        Vj_2 = numpy.append(
-            numpy.zeros([3,3]),
-            j_R_b,
-            axis=1)
-
-        #rospy.loginfo('\n\n[Vj 2]\n\n%s\n\n', Vj_2)
-
-        Vj = numpy.append(Vj_1, Vj_2, axis=0)
+        Vj = numpy.append(
+            numpy.append(
+                j_R_b,
+                numpy.dot(-j_R_b, S),
+                axis=1), 
+            numpy.append(
+                numpy.zeros([3,3]),
+                j_R_b,
+                axis=1), 
+            axis=0)
 
         J = numpy.column_stack((J, Vj[:,5])) 
 
@@ -132,7 +137,7 @@ def cartesian_control(joint_transforms, b_T_ee_current, b_T_ee_desired,
 	
     # Compute the pseudo-inverse of the Jacobian. Make sure to avoid numerical
     # issues that can arise from small singular values
-    J_pinv = numpy.linalg.pinv(J, rcond=1e-15)
+    J_pinv = numpy.linalg.pinv(J, rcond=1e-8)
     ##rospy.loginfo('\n\nJacobian Pseudo-inverse\n\n%s\n\n', J_pinv)
 
     # Use the pseudo-inverse of the Jacobian to map from end-effector velocity to
@@ -153,6 +158,7 @@ def cartesian_control(joint_transforms, b_T_ee_current, b_T_ee_desired,
         x_dot)
     rospy.loginfo('\n\n[Vee]\t%s\n\n', V_ee)
 
+    # map from end-effector velocity to joint velocities
     dq = numpy.dot(J_pinv, V_ee)
     ##rospy.loginfo('\n\ndq\n\n%s\n\n', dq)
 
