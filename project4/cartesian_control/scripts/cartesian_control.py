@@ -64,7 +64,7 @@ def cartesian_control(joint_transforms, b_T_ee_current, b_T_ee_desired,
     # (the simplest form is to use a PROPORTIONAL CONTROLLER)
 
     # Change of the end-effector in the base coordinate frame
-    lin_gain = 100
+    lin_gain = 1
     rot_gain = 1
 
     delta_X = numpy.append(b_t_ee * lin_gain, ROT * rot_gain)
@@ -101,11 +101,13 @@ def cartesian_control(joint_transforms, b_T_ee_current, b_T_ee_desired,
     b_T_j = numpy.empty((0,0))
     for j in range(num_joints):
         # b_T_j (i.e. from base to joint)
+        '''
         if b_T_j.size == 0:
             b_T_j = joint_transforms[j]
         else:
             b_T_j = numpy.dot(b_T_j, joint_transforms[j])
-        
+        '''
+        b_T_j = joint_transforms[j]
         rospy.loginfo('\n\n[b_T_j]\n\n%s\n\n', b_T_j)
         
         # Transformation to obtain the velocity in its own coordinate frame
@@ -184,10 +186,11 @@ def cartesian_control(joint_transforms, b_T_ee_current, b_T_ee_desired,
 
         #Then add the result to the joint velocities obtained for the primary objective
     	pass
-    
+    '''
     if numpy.linalg.norm(dq) > 1.0:
         dq /= max(dq) 
 	rospy.loginfo('\n\ndq norm\t%s\n\n', dq)
+	'''
     #raw_input('Press ENTER to continue')
     #----------------------------------------------------------------------
     return dq
