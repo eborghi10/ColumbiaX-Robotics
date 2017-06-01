@@ -151,13 +151,15 @@ def cartesian_control(joint_transforms, b_T_ee_current, b_T_ee_desired,
         # the first joint be as close as possible to q0_desired, while not
         # affecting the pose of the end-effector.
         rospy.loginfo('\n\nq0_desired\t%s\n\n', q0_desired)
-        # find a joint velocity that brings the joint closer to the secondary objective.
 
+        # find a joint velocity that brings the joint closer to the secondary objective.
         # use the Jacobian and its pseudo-inverse to project this velocity into the
-        # Jacobian nullspace. Be careful to use the 'exact' version of the Jacobian
+        # Jacobian nullspace. It must be used the 'exact' version of the Jacobian
         # pseudo-inverse, not its 'safe' version. 
         J_pinv = numpy.linalg.pinv(J, rcond=0)
-        dq_n = numpy.dot(numpy.identity(7) - numpy.dot(J_pinv, J), dq)
+        dq_n = numpy.dot(
+            numpy.identity(7) - numpy.dot(J_pinv, J), 
+            numpy.array([q0_desired - q_current[0],0,0,0,0,0,0]))
         #Then add the result to the joint velocities obtained for the primary objective
         dq = numpy.dot(J_pinv, x_dot) + dq_n
      
