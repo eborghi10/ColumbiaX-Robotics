@@ -1,0 +1,37 @@
+<?xml version="1.0"?>
+<package>
+  <name>motion_planning</name>
+  <version>0.0.0</version>
+  <description>The motion planning package</description>
+
+  <maintainer email="matei@todo.todo">matei</maintainer>
+
+  <license>TODO</license>
+
+  <buildtool_depend>catkin</buildtool_depend>
+
+  <build_depend>actionlib</build_depend>
+  <build_depend>control_msgs</build_depend>
+  <build_depend>moveit_commander</build_depend>
+  <build_depend>moveit_msgs</build_depend>
+  <build_depend>rospy</build_depend>
+  <build_depend>interactive_markers</build_depend>
+  <build_depend>sensor_msgs</build_depend>
+  <build_depend>visualization_msgs</build_depend>
+  <build_depend>tf</build_depend>
+
+  <run_depend>actionlib</run_depend>
+  <run_depend>control_msgs</run_depend>
+  <run_depend>interactive_markers</run_depend>
+  <run_depend>moveit_commander</run_depend>
+  <run_depend>moveit_msgs</run_depend>
+  <run_depend>rospy</run_depend>
+  <run_depend>sensor_msgs</run_depend>
+  <run_depend>visualization_msgs</run_depend>
+  <run_depend>tf</run_depend>
+  <run_depend>interactive_markers</run_depend>
+
+  <export>
+  </export>
+
+</package>

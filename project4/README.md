@@ -3,8 +3,6 @@
 ```
 $ roslaunch cartesian_control cartesian_exec.launch
 $ rosrun cartesian_control cartesian_control.py
-
-$ rosrun cartesian_control grader.py
 ```
 
 ## Description

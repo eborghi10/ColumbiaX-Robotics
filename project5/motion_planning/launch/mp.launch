@@ -1,0 +1,13 @@
+<launch>
+
+  <include file="$(find robot_sim)/launch/kuka_lwr.launch"/>
+   
+  <include file="$(find lwr_robot_moveit_config)/launch/planning_context.launch">
+    <arg name="load_robot_description" value="true"/>
+  </include>
+
+  <include file="$(find lwr_robot_moveit_config)/launch/move_group.launch">
+    <arg name="allow_trajectory_execution" value="false"/>
+  </include>
+
+</launch>

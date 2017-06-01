@@ -1,0 +1,170 @@
+#!/usr/bin/env python
+
+import numpy
+import geometry_msgs.msg
+from interactive_markers.interactive_marker_server import *
+from interactive_markers.menu_handler import *
+import moveit_commander
+import moveit_msgs.srv
+import rospy
+import sensor_msgs.msg
+import sys
+import tf
+from visualization_msgs.msg import InteractiveMarkerControl
+from visualization_msgs.msg import Marker
+from copy import deepcopy
+
+from obstacle_generator import ObstacleGenerator
+from obstacle_generator import convert_to_message
+import time
+
+def convert_to_trans_message(T):
+    t = geometry_msgs.msg.Transform()
+    position = tf.transformations.translation_from_matrix(T)
+    orientation = tf.transformations.quaternion_from_matrix(T)
+    t.translation.x = position[0]
+    t.translation.y = position[1]
+    t.translation.z = position[2]
+    t.rotation.x = orientation[0]
+    t.rotation.y = orientation[1]
+    t.rotation.z = orientation[2]
+    t.rotation.w = orientation[3]        
+    return t
+
+def convert_from_message(msg):
+    R = tf.transformations.quaternion_matrix((msg.orientation.x,
+                                              msg.orientation.y,
+                                              msg.orientation.z,
+                                              msg.orientation.w))
+    T = tf.transformations.translation_matrix((msg.position.x, 
+                                               msg.position.y, 
+                                               msg.position.z))
+    return numpy.dot(T,R)
+
+class Grader(object):
+
+    def __init__(self):
+        print "Grader initializing..."
+        self.og = ObstacleGenerator()
+
+        self.mutex = Lock()
+
+        # Publisher to send commands
+        self.pub_command = rospy.Publisher("/motion_planning_goal", geometry_msgs.msg.Transform, 
+                                           queue_size=1)        
+        self.listener = tf.TransformListener()
+
+        # Subscribes to information about what the current joint values are.
+        rospy.Subscriber("/joint_states", sensor_msgs.msg.JointState, 
+                         self.joint_states_callback)
+
+        # Wait for validity check service
+        rospy.wait_for_service("check_state_validity")
+        self.state_valid_service = rospy.ServiceProxy('check_state_validity',  
+                                                      moveit_msgs.srv.GetStateValidity)
+
+        # Create interactive marker for display purposes
+        self.init_marker()
+        print "Initialization done."
+
+    def control_marker_feedback(self, feedback):
+        print 'Marker for display purposes only'
+
+    def joint_states_callback(self, joint_state):
+        self.mutex.acquire()
+        self.joint_state = joint_state
+        self.mutex.release()
+
+    def check_validity(self, joint_state):
+        req = moveit_msgs.srv.GetStateValidityRequest()
+        req.group_name = "lwr_arm"
+        req.robot_state = moveit_msgs.msg.RobotState()
+        req.robot_state.joint_state = joint_state
+        res = self.state_valid_service(req)
+        return res.valid
+
+    def goto_pose(self, T, timeout):
+        self.server.setPose("move_arm_marker", convert_to_message(T))
+        self.server.applyChanges()
+        self.pub_command.publish(convert_to_trans_message(T))
+        print 'Goal published'        
+        start_time = time.time()
+        done = False
+        while not done and not rospy.is_shutdown():
+
+            self.mutex.acquire()
+            last_joint_state = deepcopy(self.joint_state)
+            self.mutex.release()
+            if not self.check_validity(last_joint_state):
+                print 'COLLISION!'
+
+            try:
+                (trans,rot) = self.listener.lookupTransform('world_link','lwr_arm_7_link',
+                                                            rospy.Time(0))
+            except (tf.LookupException, tf.ConnectivityException, tf.ExtrapolationException):
+                print "TF Exception!"
+                continue
+
+            TR = numpy.dot(tf.transformations.translation_matrix(trans), 
+                           tf.transformations.quaternion_matrix(rot))
+            
+            if (tf.transformations.is_same_transform(T, TR)): 
+                print 'Goal reached'
+                done = True
+
+            if (time.time() - start_time > timeout) :
+                done = True
+                print ("Timed out")
+            else:
+                rospy.sleep(0.05)
+
+    def init_marker(self):
+
+        self.server = InteractiveMarkerServer("control_markers")
+
+        control_marker = InteractiveMarker()
+        control_marker.header.frame_id = "/world_link"
+        control_marker.name = "move_arm_marker"
+
+        menu_control = InteractiveMarkerControl()
+        menu_control.interaction_mode = InteractiveMarkerControl.BUTTON
+        menu_control.always_visible = True
+        box = Marker()        
+        box.type = Marker.CUBE
+        box.scale.x = 0.15
+        box.scale.y = 0.03
+        box.scale.z = 0.03
+        box.color.r = 0.5
+        box.color.g = 0.5
+        box.color.b = 0.5
+        box.color.a = 1.0
+        menu_control.markers.append(box)
+        box2 = deepcopy(box)
+        box2.scale.x = 0.03
+        box2.scale.z = 0.1
+        box2.pose.position.z=0.05
+        menu_control.markers.append(box2)
+        control_marker.controls.append(menu_control)
+
+        control_marker.scale = 0.25        
+        self.server.insert(control_marker, self.control_marker_feedback)
+        self.server.applyChanges()
+
+if __name__ == '__main__':
+    moveit_commander.roscpp_initialize(sys.argv)
+    rospy.init_node('motion_grader', anonymous=True)
+    g = Grader()
+    rospy.sleep(1.0)
+    g.og.no_obs();
+    rospy.sleep(0.5)
+    Ttrans = tf.transformations.translation_matrix((0.5,0.5,0.3))
+    Rtrans = tf.transformations.rotation_matrix(1.57,(0,1,0))
+    T = numpy.dot(Ttrans,Rtrans)
+    g.goto_pose(T, 10)
+    g.og.complex_obs()
+    rospy.sleep(0.5)
+    Ttrans = tf.transformations.translation_matrix((0.5,-0.2,0.3))
+    Rtrans = tf.transformations.rotation_matrix(1.57,(0,1,0))
+    T = numpy.dot(Ttrans,Rtrans)
+    g.goto_pose(T, 20)
+
