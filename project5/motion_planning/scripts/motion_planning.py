@@ -198,10 +198,73 @@ class MoveArm(object):
         # q_max: list of upper joint limits
         rospy.loginfo('\n\n[q_max]\t%s\n\n', q_max)
 
-        # -----------------------------------------
-        # Replace this with your code
+        # Create an RRT node object. This object must hold both a position in
+        # configuration space and a reference to its parent node. You can then
+        # store each new node in a list
+        rrt_object = {"position_in_config_space" : q_start, "parent_node" : 0}
+        rrt_list = numpy.array([rrt_object])
+
+        # The main part of the algorithm is a loop, in which you expand the
+        # tree until it reaches the goal. You might also want to include some additional
+        # exit conditions (maximum number of nodes, a time-out) such that your algorithm
+        # does not run forever on a problem that might be impossible to solve.
+        maximum_nodes = 50
+        maximum_time_secs = 240
+        begin = rospy.get_rostime().secs
+        now = rospy.get_rostime().secs
+
+        while rrt_list.size < maximum_nodes or (now - begin) > maximum_time_secs :
+        	# Sample a random point in configuration space within the joint limits.
+        	# You can use the random.random() function provided by Python. Remember that
+        	# a "point" in configuration space must specify a value for each robot joint,
+        	# and is thus 7-dimensional (in the case of this robot)!
+        	q_random = [random.uniform(q_min[i], q_max[i]) for i in xrange(self.num_joints)]
+        	rospy.loginfo('\n\n[q random]\t%s\n\n', q_random)
+
+        	# Find the node already in your tree that is closest to this random point.
+        	distances = [np.linalg.norm(i["position_in_config_space"] - q_random) for i in xrange(rrt_list)]
+        	min_distance_index = distances.index(min(distances))
+
+        	# Find the point that lies a predefined distance (e.g. 0.5) from this existing
+        	# node in the direction of the random point.
+        	vector = distances(min_distance_index) * 0.5
+
+        	# Check if the path from the closest node to this point is collision free.
+        	# To do so you must discretize the path and check the resulting points along
+        	# the path. You can use the is_state_valid method to do so. The MoveArm class
+        	# has a member q_sample - a list that defines the minimum discretization for
+        	# each joint. You must make sure that you sample finely enough that this minimum
+        	# is respected for each joint.
+        	if is_state_valid(vector) == True:
+        		# If the path is collision free, add a new node with at the position of the
+        		# point and with the closest node as a parent.
+
+        		rrt_object["position_in_config_space"] = q_random
+        		rrt_object["parent_node"] = rrt_object[min_distance_index].get("position_in_config_space")
+        		rrt_list.append(rrt_object)
+
+        		# Check if the path from this new node to the goal is collision free.
+        		# If so, add the goal as a node with the new node as a parent. The tree
+        		# is complete and the loop can be exited.
+        		if is_state_valid(q_random - q_goal) == True:
+        			rrt_object["parent_node"] = rrt_object[-1].get("parent_node")
+        			rrt_object["position_in_config_space"] = q_goal
+        			break
+
+        	now = rospy.get_rostime().secs
+
+        # Trace the tree back from the goal to the root and for each node insert the
+        # position in configuration space to a list of joints values.
         q_list = [q_start, q_goal]
 
+        # As we have been following the branches of the tree the path computed this way can
+        # be very coarse and more complicated than necessary. Therefore, you must check this
+        # list of joint values for shortcuts. Similarly to what you were doing when
+        # constructing the tree, you can check if the path between any two points in this list
+        # is collision free. You can delete any points between two points connected by a
+        # collision free path.
+        
+        # Return the resulting trimmed path
         return q_list
 
     def create_trajectory(self, q_list, v_list, a_list, t):
