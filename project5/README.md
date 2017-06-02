@@ -52,3 +52,27 @@ The algorithm follows the steps presented in the following steps:
 
 Keep in mind that the RRT algorithm is stochastic in nature. That means that it will have different results every time you run it. Therefore, it is possible that the algorithm finds a path within the time given one time and times out another time. Particularly for the most complex obstacle running time can vary considerably.
 
+
+## Errors
+
+### pyassimp error
+
+> >>> import moveit_commander
+> Traceback (most recent call last):
+> File "<stdin>", line 1, in <module>
+> File "/vol/sandbox/ros/install/lib/python2.7/dist-packages/moveit_commander/__init__.py", line 3, in <module>
+>    from planning_scene_interface import *
+> File "/vol/sandbox/ros/install/lib/python2.7/dist-packages/moveit_commander/planning_scene_interface.py", line 48, in <module>
+>    import pyassimp
+> File "/usr/lib/python2.7/dist-packages/pyassimp/__init__.py", line 1, in <module>
+>    from .core import *
+> File "/usr/lib/python2.7/dist-packages/pyassimp/core.py", line 23, in <module>
+>    from . import structs
+> ImportError: cannot import name structs
+
+
+Do the following change in /usr/lib/python2.7/dist-packages/pyassimp/core.py:
+```
+-    load, load_mem, release, dll = helper.search_library()
++    load_mem, release, dll = helper.search_library()
+```
