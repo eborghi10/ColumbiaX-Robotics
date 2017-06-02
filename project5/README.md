@@ -30,17 +30,17 @@ The algorithm follows the steps presented in the following steps:
 
 - The main part of the algorithm is a loop, in which you expand the tree until it reaches the goal. You might also want to include some additional exit conditions (maximum number of nodes, a time-out) such that your algorithm does not run forever on a problem that might be impossible to solve. In this loop, you should do the following:
 
-	- Sample a random point in configuration space within the joint limits. You can use the random.random() function provided by Python. Remember that a "point" in configuration space must specify a value for each robot joint, and is thus 7-dimensional (in the case of this robot)!
+	+ Sample a random point in configuration space within the joint limits. You can use the `random.random()` function provided by Python. Remember that a "point" in configuration space must specify a value for each robot joint, and is thus 7-dimensional (in the case of this robot)!
 
-	- Find the node already in your tree that is closest to this random point.
+	+ Find the node already in your tree that is closest to this random point.
 
-	- Find the point that lies a predefined distance (e.g. 0.5) from this existing node in the direction of the random point.
+	+ Find the point that lies a predefined distance (e.g. 0.5) from this existing node in the direction of the random point.
 
-	- Check if the path from the closest node to this point is collision free. To do so you must discretize the path and check the resulting points along the path. You can use the is_state_valid method to do so. The MoveArm class has a member q_sample - a list that defines the minimum discretization for each joint. You must make sure that you sample finely enough that this minimum is respected for each joint.
+	+ Check if the path from the closest node to this point is collision free. To do so you must discretize the path and check the resulting points along the path. You can use the `is_state_valid` method to do so. The `MoveArm` class has a member `q_sample` - a list that defines the minimum discretization for each joint. You must make sure that you sample finely enough that this minimum is respected for each joint.
 
-	- If the path is collision free, add a new node with at the position of the point and with the closest node as a parent.
+	+ If the path is collision free, add a new node with at the position of the point and with the closest node as a parent.
 
-	- Check if the path from this new node to the goal is collision free. If so, add the goal as a node with the new node as a parent. The tree is complete and the loop can be exited.
+	+ Check if the path from this new node to the goal is collision free. If so, add the goal as a node with the new node as a parent. The tree is complete and the loop can be exited.
 
 - Trace the tree back from the goal to the root and for each node insert the position in configuration space to a list of joints values.
 
@@ -50,7 +50,5 @@ The algorithm follows the steps presented in the following steps:
 
 
 
-You can move the controls around in space, however the robot will not immediately follow as it did in the last project. Instead, right clicking on the controls will open a menu, in which you can command the arm to move to the desired position. You can also add obstacles of varying complexity or run a grader we provide for you to test your code. This will test your implementation on all three objects and tell you if there have been any collisions. It gives your algorithm 10, 30 and 120 seconds for each object in order of increasing complexity. 
-
-Keep in mind that the RRT algorithm is stochastic in nature. That means that it will have different results every time you run it. Therefore, it is possible that the algorithm finds a path within the time given one time and times out another time. Particularly for the most complex obstacle running time can vary considerably. The same of course is true for the grade you get when you press the 'Submit' button. We encourage to test with the grader we provide for you until you get consistent results. The delay between you submitting and receiving a grade can be a little longer than in the previous projects, but should be no longer than 5 minutes.
+Keep in mind that the RRT algorithm is stochastic in nature. That means that it will have different results every time you run it. Therefore, it is possible that the algorithm finds a path within the time given one time and times out another time. Particularly for the most complex obstacle running time can vary considerably.
 

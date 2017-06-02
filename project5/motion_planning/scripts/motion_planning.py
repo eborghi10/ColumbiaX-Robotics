@@ -187,7 +187,18 @@ class MoveArm(object):
         return res.valid
                
     def motion_plan(self, q_start, q_goal, q_min, q_max):
-        
+        # q_start: list of joint values of the robot at the starting position.
+        # This is the position in CONFIGURATION SPACE from which to start.
+        rospy.loginfo('\n\n[q_start]\t%s\n\n', q_start)
+        # q_goal: list of joint values of the robot at the goal position.
+        # This is the position in configuration space for which to plan.
+        rospy.loginfo('\n\n[q_goal]\t%s\n\n', q_goal)
+        # q_min: list of lower joint limits
+        rospy.loginfo('\n\n[q_min]\t%s\n\n', q_min)
+        # q_max: list of upper joint limits
+        rospy.loginfo('\n\n[q_max]\t%s\n\n', q_max)
+
+        # -----------------------------------------
         # Replace this with your code
         q_list = [q_start, q_goal]
 
