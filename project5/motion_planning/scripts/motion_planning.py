@@ -241,7 +241,7 @@ class MoveArm(object):
 
         		rrt_object["position_in_config_space"] = q_random
         		rrt_object["parent_node"] = rrt_object[min_distance_index].get("position_in_config_space")
-        		rrt_list.append(rrt_object)
+        		rrt_list.append(rrt_list, rrt_object)
 
         		# Check if the path from this new node to the goal is collision free.
         		# If so, add the goal as a node with the new node as a parent. The tree
