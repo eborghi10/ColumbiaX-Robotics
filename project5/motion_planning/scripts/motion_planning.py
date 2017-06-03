@@ -202,7 +202,8 @@ class MoveArm(object):
         # configuration space and a reference to its parent node. You can then
         # store each new node in a list
         rrt_object = {"position_in_config_space" : q_start, "parent_node" : 0}
-        rrt_list = numpy.array([rrt_object])
+        rrt_list = []
+        rrt_list.append(rrt_object)
 
         # The main part of the algorithm is a loop, in which you expand the
         # tree until it reaches the goal. You might also want to include some additional
@@ -213,7 +214,7 @@ class MoveArm(object):
         begin = rospy.get_rostime().secs
         now = rospy.get_rostime().secs
 
-        while rrt_list.size < maximum_nodes or (now - begin) > maximum_time_secs :
+        while len(rrt_list) < maximum_nodes or (now - begin) > maximum_time_secs :
         	# Sample a random point in configuration space within the joint limits.
         	# You can use the random.random() function provided by Python. Remember that
         	# a "point" in configuration space must specify a value for each robot joint,
@@ -222,7 +223,7 @@ class MoveArm(object):
         	rospy.loginfo('\n\n[q random]\t%s\n\n', q_random)
 
         	# Find the node already in your tree that is closest to this random point.
-        	distances = [np.linalg.norm(i["position_in_config_space"] - q_random) for i in xrange(rrt_list)]
+        	distances = [np.linalg.norm(q_pos - q_random) for i,q_pos in enumerate(d["position_in_config_space"] for d in rrt_list)]
         	min_distance_index = distances.index(min(distances))
 
         	# Find the point that lies a predefined distance (e.g. 0.5) from this existing
