@@ -204,7 +204,8 @@ class MoveArm(object):
         rrt_object = {"position_in_config_space" : q_start, "parent_node" : 0}
         rrt_list = []
         rrt_list.append(rrt_object)
-
+        rospy.loginfo('\n\n[RRT list]\n\n%s\n\n', rrt_list)
+        
         # The main part of the algorithm is a loop, in which you expand the
         # tree until it reaches the goal. You might also want to include some additional
         # exit conditions (maximum number of nodes, a time-out) such that your algorithm
@@ -219,16 +220,20 @@ class MoveArm(object):
         	# You can use the random.random() function provided by Python. Remember that
         	# a "point" in configuration space must specify a value for each robot joint,
         	# and is thus 7-dimensional (in the case of this robot)!
-        	q_random = [random.uniform(q_min[i], q_max[i]) for i in xrange(self.num_joints)]
+        	q_random = [random.uniform(q_min[i], q_max[i]) for i in range(self.num_joints)]
         	rospy.loginfo('\n\n[q random]\t%s\n\n', q_random)
 
         	# Find the node already in your tree that is closest to this random point.
-        	distances = [np.linalg.norm(q_pos - q_random) for i,q_pos in enumerate(d["position_in_config_space"] for d in rrt_list)]
+        	distances = [numpy.linalg.norm(q_pos - q_random) for i,q_pos in enumerate(d["position_in_config_space"] for d in rrt_list)]
+        	rospy.loginfo('\n\n[distances]\t%s\n\n', distances)
+
         	min_distance_index = distances.index(min(distances))
+        	rospy.loginfo('\n\n[min distance index]\t%s\n\n', min_distance_index)
 
         	# Find the point that lies a predefined distance (e.g. 0.5) from this existing
         	# node in the direction of the random point.
-        	vector = distances(min_distance_index) * 0.5
+        	vector = (rrt_list[min_distance_index].get("position_in_config_space") - q_random) * 0.5
+        	rospy.loginfo('\n\n[min vector]\t%s\n\n', vector)
 
         	# Check if the path from the closest node to this point is collision free.
         	# To do so you must discretize the path and check the resulting points along
@@ -236,34 +241,45 @@ class MoveArm(object):
         	# has a member q_sample - a list that defines the minimum discretization for
         	# each joint. You must make sure that you sample finely enough that this minimum
         	# is respected for each joint.
-        	if is_state_valid(vector) == True:
+        	if self.is_state_valid(vector) == True:
         		# If the path is collision free, add a new node with at the position of the
         		# point and with the closest node as a parent.
 
-        		rrt_object["position_in_config_space"] = q_random
-        		rrt_object["parent_node"] = rrt_object[min_distance_index].get("position_in_config_space")
-        		rrt_list.append(rrt_list, rrt_object)
+        		rrt_object.update({"position_in_config_space" : q_random})
+        		# parent_node = min_distance_index
+        		rrt_object.update({"parent_node": min_distance_index})
+        		rrt_list.append(rrt_object)
 
         		# Check if the path from this new node to the goal is collision free.
         		# If so, add the goal as a node with the new node as a parent. The tree
         		# is complete and the loop can be exited.
-        		if is_state_valid(q_random - q_goal) == True:
-        			rrt_object["parent_node"] = rrt_object[-1].get("parent_node")
-        			rrt_object["position_in_config_space"] = q_goal
+        		vector = [q_random[i] - q_goal[i] for i in range(0, self.num_joints)]
+        		if self.is_state_valid(vector) == True:
+        			parent_node = rrt_list[-1].get("parent_node")
+        			rrt_object.update({"parent_node" : parent_node})
+        			rrt_object.update({"position_in_config_space" : q_goal})
         			break
+        		else:
+        			rospy.loginfo('[2] is_state_valid = False')
+        	else:
+        		rospy.loginfo('[1] is_state_valid = False')
+
+        	rospy.loginfo('\n\n[RRT list]\n\n%s\n\n', rrt_list)
 
         	now = rospy.get_rostime().secs
-
-        # Trace the tree back from the goal to the root and for each node insert the
-        # position in configuration space to a list of joints values.
+        
+        # Trace the tree back from the goal to the root and for each
+        # node insert the position in configuration space to a list of
+        # joints values.
         q_list = [q_start, q_goal]
 
-        # As we have been following the branches of the tree the path computed this way can
-        # be very coarse and more complicated than necessary. Therefore, you must check this
-        # list of joint values for shortcuts. Similarly to what you were doing when
-        # constructing the tree, you can check if the path between any two points in this list
-        # is collision free. You can delete any points between two points connected by a
-        # collision free path.
+        # As we have been following the branches of the tree the path
+        # computed this way can be very coarse and more complicated
+        # than necessary. Therefore, you must check this list of joint
+        # values for shortcuts. Similarly to what you were doing when
+        # constructing the tree, you can check if the path between any
+        # two points in this list is collision free. You can delete any
+        # points between two points connected by a collision free path.
         
         # Return the resulting trimmed path
         return q_list
