@@ -187,18 +187,31 @@ class MoveArm(object):
 		return res.valid
 
 	def check_collision(self, vector, q):
-		path = numpy.outer(
-			numpy.arange(1, self.num_joints), 
-			numpy.dot(self.q_sample, vector / numpy.linalg.norm(vector))) + q
+
+		n = max(numpy.absolute(map(int, self.lists_div(vector, self.q_sample))))
+		#rospy.loginfo('\n\n[n]\t%s\n\n', n)
+		step = self.list_div(min(self.q_sample), vector)
+		#rospy.loginfo('\n\n[step]\t%s\n\n', step)
+
+		path = numpy.outer(numpy.arange(1, n), step) + q
 		
 		for i in range(path.shape[0]):
 			if self.is_state_valid(path[i]) == False:
 				return False
 		return True
 
+	def lists_sub(self, v1, v2):
+		return [v1[i]-v2[i] for i in range(self.num_joints)]
+
 	def lists_norm(self, v1, v2):
-		v = [v1[i]-v2[i] for i in range(self.num_joints)]
-		return numpy.linalg.norm(v)
+		return numpy.linalg.norm(self.lists_sub(v1,v2))
+
+	def lists_div(self, v1, v2):
+		return [v1[i]/v2[i] for i in range(self.num_joints)]
+
+	def list_div(self, v1, v2):
+		return [v1/v2[i] for i in range(self.num_joints)]
+			
 			   
 	def motion_plan(self, q_start, q_goal, q_min, q_max):
 		# q_start: list of joint values of the robot at the starting position.
@@ -246,7 +259,8 @@ class MoveArm(object):
 
 			# Find the point that lies a predefined distance (e.g. 0.5) from this existing
 			# node in the direction of the random point.
-			vector = (rrt_list[min_distance_index].get("position_in_config_space") - q_random) * 0.5
+			vector = self.lists_sub(rrt_list[min_distance_index].get("position_in_config_space"), q_random)
+			#vector *= 0.5
 			rospy.loginfo('\n\n[min vector]\t%s\n\n', vector)
 
 			# Check if the path from the closest node to this point is collision free.
