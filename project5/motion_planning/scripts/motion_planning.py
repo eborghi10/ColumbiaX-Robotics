@@ -325,6 +325,7 @@ class MoveArm(object):
 		# Return the resulting trimmed path
 		rospy.loginfo('\n\n[q list size]\t%s\n\n', len(q_list))
 		return q_list
+		#return [q_start, q_goal]
 
 	def create_trajectory(self, q_list, v_list, a_list, t):
 		joint_trajectory = trajectory_msgs.msg.JointTrajectory()
