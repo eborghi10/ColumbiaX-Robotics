@@ -221,9 +221,9 @@ class MoveArm(object):
 		# This is the position in configuration space for which to plan.
 		rospy.loginfo('\n\n[q_goal]\t%s\n\n', q_goal)
 		# q_min: list of lower joint limits
-		rospy.loginfo('\n\n[q_min]\t%s\n\n', q_min)
+		#rospy.loginfo('\n\n[q_min]\t%s\n\n', q_min)
 		# q_max: list of upper joint limits
-		rospy.loginfo('\n\n[q_max]\t%s\n\n', q_max)
+		#rospy.loginfo('\n\n[q_max]\t%s\n\n', q_max)
 
 		# Create an RRT node object. This object must hold both a position in
 		# configuration space and a reference to its parent node. You can then
@@ -325,9 +325,10 @@ class MoveArm(object):
 		# points between two points connected by a collision free path.
 		
 		# Return the resulting trimmed path
+		q_list = [q_start, q_goal]
 		rospy.loginfo('\n\n[q list size]\t%s\n\n', len(q_list))
-		#return q_list
-		return [q_start, q_goal]
+		rospy.loginfo('\n\n[q list]\n\n%s\n\n', q_list)
+		return q_list
 
 	def create_trajectory(self, q_list, v_list, a_list, t):
 		joint_trajectory = trajectory_msgs.msg.JointTrajectory()
