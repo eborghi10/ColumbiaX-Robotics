@@ -297,7 +297,9 @@ class MoveArm(object):
 
 			rospy.loginfo('\n\n[RRT list]\n\n%s\n\n', rrt_list)
 
+			rospy.loginfo('\n\n[len(RRT list)]\t%s\n\n', len(rrt_list))
 			now = rospy.get_rostime().secs
+			rospy.loginfo('\n\n[time]\t%s\n\n', now-begin)
 		
 		# Trace the tree back from the goal to the root and for each
 		# node insert the position in configuration space to a list of
@@ -324,8 +326,8 @@ class MoveArm(object):
 		
 		# Return the resulting trimmed path
 		rospy.loginfo('\n\n[q list size]\t%s\n\n', len(q_list))
-		return q_list
-		#return [q_start, q_goal]
+		#return q_list
+		return [q_start, q_goal]
 
 	def create_trajectory(self, q_list, v_list, a_list, t):
 		joint_trajectory = trajectory_msgs.msg.JointTrajectory()

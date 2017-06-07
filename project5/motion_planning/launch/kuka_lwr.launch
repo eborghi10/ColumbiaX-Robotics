@@ -17,6 +17,13 @@
     respawn="false" 
     output="screen"/>
 
+  <!--node 
+    name="fwk" 
+    pkg="forward_kinematics" 
+    type="solution.py" 
+    respawn="false" 
+    output="screen"/-->
+
   <node 
   	pkg="robot_state_publisher" 
   	type="robot_state_publisher" 
