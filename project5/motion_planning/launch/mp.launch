@@ -1,6 +1,6 @@
 <launch>
 
-  <include file="$(find motion_planning)/launch/kuka_lwr.launch"/>
+  <include file="$(find robot_sim_prj5)/launch/kuka_lwr.launch"/>
    
   <include file="$(find lwr_robot_moveit_config)/launch/planning_context.launch">
     <arg name="load_robot_description" value="true"/>
@@ -9,5 +9,24 @@
   <include file="$(find lwr_robot_moveit_config)/launch/move_group.launch">
     <arg name="allow_trajectory_execution" value="false"/>
   </include>
+
+
+  <node 
+    pkg="motion_planning" 
+    type="marker_control.py" 
+    name="marker_control" 
+    output="screen"/>
+
+  <node
+  	pkg="motion_planning"
+  	type="motion_planning.py"
+  	name="motion_planning"
+  	output="screen" />
+
+  <node 
+    pkg="rviz" 
+    type="rviz" 
+    name="rviz"
+    args="-d $(find motion_planning)/config/mp.rviz" />
 
 </launch>

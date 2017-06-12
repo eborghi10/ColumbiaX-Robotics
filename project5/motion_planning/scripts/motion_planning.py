@@ -214,6 +214,11 @@ class MoveArm(object):
 			
 			   
 	def motion_plan(self, q_start, q_goal, q_min, q_max):
+
+		# https://courses.edx.org/courses/course-v1:ColumbiaX+CSMM.103x+1T2017/discussion/forum/3198d990b9d9ae05929e58b75dffed841f56a2c4/threads/5930d45e22a8fb0761000d34
+		# https://courses.edx.org/courses/course-v1:ColumbiaX+CSMM.103x+1T2017/discussion/forum/3198d990b9d9ae05929e58b75dffed841f56a2c4/threads/5938cbc622a8fb079a0011b5
+		# https://courses.edx.org/courses/course-v1:ColumbiaX+CSMM.103x+1T2017/discussion/forum/3198d990b9d9ae05929e58b75dffed841f56a2c4/threads/5932c1bc22a8fb0790000de5
+
 		# q_start: list of joint values of the robot at the starting position.
 		# This is the position in CONFIGURATION SPACE from which to start.
 		rospy.loginfo('\n\n[q_start]\t%s\n\n', q_start)
@@ -325,7 +330,7 @@ class MoveArm(object):
 		# points between two points connected by a collision free path.
 		
 		# Return the resulting trimmed path
-		q_list = [q_start, q_goal]
+		#q_list = [q_start, q_goal]
 		rospy.loginfo('\n\n[q list size]\t%s\n\n', len(q_list))
 		rospy.loginfo('\n\n[q list]\n\n%s\n\n', q_list)
 		return q_list
