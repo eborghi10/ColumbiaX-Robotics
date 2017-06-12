@@ -187,7 +187,13 @@ class MoveArm(object):
 		return res.valid
 
 	def check_collision(self, vector, q):
-
+		# v = b-a
+		# s = v / n
+		# discrete path: a + k * s | 1 < k <  n
+		
+		vector /= numpy.linalg.norm(vector)
+		#vector *= 0.05
+		
 		n = max(numpy.absolute(map(int, self.lists_div(vector, self.q_sample))))
 		#rospy.loginfo('\n\n[n]\t%s\n\n', n)
 		step = self.list_div(min(self.q_sample), vector)
@@ -214,11 +220,6 @@ class MoveArm(object):
 			
 			   
 	def motion_plan(self, q_start, q_goal, q_min, q_max):
-
-		# https://courses.edx.org/courses/course-v1:ColumbiaX+CSMM.103x+1T2017/discussion/forum/3198d990b9d9ae05929e58b75dffed841f56a2c4/threads/5930d45e22a8fb0761000d34
-		# https://courses.edx.org/courses/course-v1:ColumbiaX+CSMM.103x+1T2017/discussion/forum/3198d990b9d9ae05929e58b75dffed841f56a2c4/threads/5938cbc622a8fb079a0011b5
-		# https://courses.edx.org/courses/course-v1:ColumbiaX+CSMM.103x+1T2017/discussion/forum/3198d990b9d9ae05929e58b75dffed841f56a2c4/threads/5932c1bc22a8fb0790000de5
-
 		# q_start: list of joint values of the robot at the starting position.
 		# This is the position in CONFIGURATION SPACE from which to start.
 		rospy.loginfo('\n\n[q_start]\t%s\n\n', q_start)
@@ -233,7 +234,7 @@ class MoveArm(object):
 		# Create an RRT node object. This object must hold both a position in
 		# configuration space and a reference to its parent node. You can then
 		# store each new node in a list
-		rrt_object = {"position_in_config_space" : q_start, "parent_node" : 0}
+		rrt_object = {"position_in_config_space" : q_start, "parent_node" : -1}
 		rrt_list = []
 		rrt_list.append(rrt_object)
 		rospy.loginfo('\n\n[RRT list]\n\n%s\n\n', rrt_list)
@@ -265,7 +266,6 @@ class MoveArm(object):
 			# Find the point that lies a predefined distance (e.g. 0.5) from this existing
 			# node in the direction of the random point.
 			vector = self.lists_sub(rrt_list[min_distance_index].get("position_in_config_space"), q_random)
-			#vector *= 0.5
 			rospy.loginfo('\n\n[min vector]\t%s\n\n', vector)
 
 			# Check if the path from the closest node to this point is collision free.
@@ -316,7 +316,7 @@ class MoveArm(object):
 
 			q_list.insert(0, rrt_list[parent_node].get("position_in_config_space"))
 
-			if parent_node == 0:
+			if parent_node == -1:
 				break
 			else:
 				parent_node = rrt_list[parent_node].get("parent_node")
