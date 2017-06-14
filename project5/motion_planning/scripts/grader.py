@@ -118,7 +118,7 @@ class Grader(object):
                 print 'COLLISION!'
 
             try:
-                (trans,rot) = self.listener.lookupTransform('world_link','lwr_arm_7_link',
+                (trans,rot) = self.listener.lookupTransform('/world_link','lwr_arm_7_link',
                                                             rospy.Time(0))
             except (tf.LookupException, tf.ConnectivityException, tf.ExtrapolationException):
                 print "TF Exception!"

@@ -307,7 +307,7 @@ class MoveArm(object):
 				# If so, add the goal as a node with the new node as a parent. The tree
 				# is complete and the loop can be exited.
 				
-				if self.is_collision_free_path(q_goal, random_point) == True:
+				if self.is_collision_free_path(random_point, q_goal) == True:
 					parent_node = len(rrt_list)-1
 					rrt_object.update({"parent_node" : parent_node})
 					rrt_object.update({"position_in_config_space" : q_goal})
