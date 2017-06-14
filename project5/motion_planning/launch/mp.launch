@@ -17,11 +17,11 @@
     name="marker_control" 
     output="screen"/>
 
-  <node
+  <!--node
   	pkg="motion_planning"
   	type="motion_planning.py"
   	name="motion_planning"
-  	output="screen" />
+  	output="screen" /-->
 
   <node 
     pkg="rviz" 

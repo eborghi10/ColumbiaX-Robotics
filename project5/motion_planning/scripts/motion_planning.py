@@ -191,18 +191,19 @@ class MoveArm(object):
 		# s = v / n
 		# discrete path: a + k * s | 1 < k <  n
 		
-		vector /= numpy.linalg.norm(vector)
-		#vector *= 0.05
-		
-		n = max(numpy.absolute(map(int, self.lists_div(vector, self.q_sample))))
+		k = max(numpy.absolute(self.lists_div(vector, self.q_sample)))
+		#n = max(numpy.absolute(map(int, self.lists_div(vector, self.q_sample))))
 		#rospy.loginfo('\n\n[n]\t%s\n\n', n)
-		step = self.list_div(min(self.q_sample), vector)
+		#step = self.list_div(min(self.q_sample), vector)
+		step = vector / k
+		#n = map(int, q / (numpy.absolute(step)+0.9))+1
+		n = 100
 		#rospy.loginfo('\n\n[step]\t%s\n\n', step)
 
 		path = numpy.outer(numpy.arange(1, n), step) + q
 		
-		for i in range(path.shape[0]):
-			if self.is_state_valid(path[i]) == False:
+		for row in path:
+			if self.is_state_valid(row) == False:
 				return False
 		return True
 
@@ -236,7 +237,7 @@ class MoveArm(object):
 		# store each new node in a list
 		rrt_object = {"position_in_config_space" : q_start, "parent_node" : -1}
 		rrt_list = []
-		rrt_list.append(rrt_object)
+		rrt_list.append(rrt_object.copy())
 		rospy.loginfo('\n\n[RRT list]\n\n%s\n\n', rrt_list)
 		
 		# The main part of the algorithm is a loop, in which you expand the
@@ -265,7 +266,11 @@ class MoveArm(object):
 
 			# Find the point that lies a predefined distance (e.g. 0.5) from this existing
 			# node in the direction of the random point.
-			vector = self.lists_sub(rrt_list[min_distance_index].get("position_in_config_space"), q_random)
+			vector = self.lists_sub(q_random, rrt_list[min_distance_index].get("position_in_config_space"))
+
+			vector /= numpy.linalg.norm(vector)
+			vector *= 0.5
+
 			rospy.loginfo('\n\n[min vector]\t%s\n\n', vector)
 
 			# Check if the path from the closest node to this point is collision free.
@@ -282,17 +287,19 @@ class MoveArm(object):
 				rrt_object.update({"position_in_config_space" : q_random})
 				# parent_node = min_distance_index
 				rrt_object.update({"parent_node": min_distance_index})
-				rrt_list.append(rrt_object)
+				rrt_list.append(rrt_object.copy())
 
 				# Check if the path from this new node to the goal is collision free.
 				# If so, add the goal as a node with the new node as a parent. The tree
 				# is complete and the loop can be exited.
-				vector = [q_random[i] - q_goal[i] for i in range(0, self.num_joints)]
+				vector = self.lists_sub(q_goal, q_random)
+				rospy.loginfo('\n\n[vector to goal]\t%s\n\n', vector)
 				
-				if self.check_collision(vector, q_random) == True:
-					parent_node = rrt_list[-1].get("parent_node")
+				if self.check_collision(vector, q_goal) == True:
+					parent_node = len(rrt_list)-1
 					rrt_object.update({"parent_node" : parent_node})
 					rrt_object.update({"position_in_config_space" : q_goal})
+					rrt_list.append(rrt_object.copy())
 					rospy.loginfo('\n\n[] goal node reached\n\n')
 					break
 				else:
@@ -305,10 +312,15 @@ class MoveArm(object):
 			rospy.loginfo('\n\n[len(RRT list)]\t%s\n\n', len(rrt_list))
 			now = rospy.get_rostime().secs
 			rospy.loginfo('\n\n[time]\t%s\n\n', now-begin)
+
+			#raw_input()
 		
 		# Trace the tree back from the goal to the root and for each
 		# node insert the position in configuration space to a list of
-		# joints values.
+		# joints values (q_list).
+		
+		rospy.loginfo('\n\n[RRT list]\n\n%s\n\n', rrt_list)
+
 		q_list = [q_goal]
 		parent_node = rrt_list[-1].get("parent_node")
 
@@ -316,11 +328,11 @@ class MoveArm(object):
 
 			q_list.insert(0, rrt_list[parent_node].get("position_in_config_space"))
 
-			if parent_node == -1:
+			if parent_node <= 0:
 				break
 			else:
 				parent_node = rrt_list[parent_node].get("parent_node")
-
+		
 		# As we have been following the branches of the tree the path
 		# computed this way can be very coarse and more complicated
 		# than necessary. Therefore, you must check this list of joint
@@ -328,10 +340,23 @@ class MoveArm(object):
 		# constructing the tree, you can check if the path between any
 		# two points in this list is collision free. You can delete any
 		# points between two points connected by a collision free path.
+
+		q_list_copy = []
+		q_list_copy.append(q_list[0])
+
+		for i in range(len(q_list)-2):
+
+			v = self.lists_sub(q_list[i+2], q_list[i])
+
+			if self.check_collision(v, q_list[i+2]) == False:
+				q_list_copy.append(q_list_copy[i])
+
+		q_list_copy.append(q_list[-1])
+		q_list = q_list_copy
 		
 		# Return the resulting trimmed path
 		#q_list = [q_start, q_goal]
-		rospy.loginfo('\n\n[q list size]\t%s\n\n', len(q_list))
+		#rospy.loginfo('\n\n[q list size]\t%s\n\n', len(q_list))
 		rospy.loginfo('\n\n[q list]\n\n%s\n\n', q_list)
 		return q_list
 

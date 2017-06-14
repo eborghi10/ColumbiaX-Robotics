@@ -55,7 +55,7 @@ Keep in mind that the RRT algorithm is stochastic in nature. That means that it 
 
 ## Errors
 
-### pyassimp error
+### pyassimp
 
 > >>> import moveit_commander
 > Traceback (most recent call last):
@@ -76,3 +76,10 @@ Do the following change in /usr/lib/python2.7/dist-packages/pyassimp/core.py:
 -    load, load_mem, release, dll = helper.search_library()
 +    load_mem, release, dll = helper.search_library()
 ```
+
+### moveit_commander
+
+> moveit_commander.roscpp_initialize(sys.argv)
+> AttributeError: 'module' object has no attribute 'roscpp_initialize'
+
+Download the original repo of the `moveit_commander` package from GitHub and build it as a ROS package.
