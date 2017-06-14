@@ -186,11 +186,27 @@ class MoveArm(object):
 		res = self.state_valid_service(req)
 		return res.valid
 
-	def check_collision(self, vector, q):
-		# v = b-a
-		# s = v / n
-		# discrete path: a + k * s | 1 < k <  n
-		
+	def get_step_vector(self, closest_point, target_point, step_size):
+		v = self.lists_norm(target_point, closest_point)
+		v *= step_size
+		return v
+
+	def is_collision_free_path(self, closest_point, target_point):
+		# closest ----> target
+
+		# Determine step_size on path
+		step_size = 0.25
+		#step_size = get_step_size(closest_point, target_point, self.q_sample)
+		# Create a small vector of length step_size
+		step_vector = self.get_step_vector(closest_point, target_point, step_size)
+		# Do small steps along the vector in the direction of the target_point
+		path = numpy.outer(numpy.arange(1, step_size), step_vector) + closest_point
+		for row in path:
+			if self.is_state_valid(row) == False:
+				return False
+		return True
+
+		'''
 		k = max(numpy.absolute(self.lists_div(vector, self.q_sample)))
 		#n = max(numpy.absolute(map(int, self.lists_div(vector, self.q_sample))))
 		#rospy.loginfo('\n\n[n]\t%s\n\n', n)
@@ -199,16 +215,13 @@ class MoveArm(object):
 		#n = map(int, q / (numpy.absolute(step)+0.9))+1
 		n = 100
 		#rospy.loginfo('\n\n[step]\t%s\n\n', step)
-
-		path = numpy.outer(numpy.arange(1, n), step) + q
-		
-		for row in path:
-			if self.is_state_valid(row) == False:
-				return False
-		return True
+		'''
 
 	def lists_sub(self, v1, v2):
 		return [v1[i]-v2[i] for i in range(self.num_joints)]
+
+	def lists_sum(self, v1, v2):
+		return [v1[i]+v2[i] for i in range(self.num_joints)]
 
 	def lists_norm(self, v1, v2):
 		return numpy.linalg.norm(self.lists_sub(v1,v2))
@@ -218,7 +231,25 @@ class MoveArm(object):
 
 	def list_div(self, v1, v2):
 		return [v1/v2[i] for i in range(self.num_joints)]
-			
+	
+	def get_random_point(self):
+		return [random.uniform(self.q_min[i], self.q_max[i]) for i in range(self.num_joints)]
+
+	def get_closest_point(self, tree, q):
+		distances = [self.lists_norm(q_pos, q) for i,q_pos in enumerate(d["position_in_config_space"] for d in tree)]
+		rospy.loginfo('\n\n[distances]\t%s\n\n', distances)
+		min_distance_index = distances.index(min(distances))
+		rospy.loginfo('\n\n[min distance index]\t%s\n\n', min_distance_index)
+		closest_point = tree[min_distance_index].get("position_in_config_space")
+		return min_distance_index, closest_point
+
+	def get_point_at_distance(self, closest_point, random_point, K):
+		vector = self.lists_sub(random_point, closest_point)
+		vector /= numpy.linalg.norm(vector)
+		vector *= K
+		vector = self.lists_sum(vector, closest_point)
+		rospy.loginfo('\n\n[target point]\t%s\n\n', vector)
+		return vector
 			   
 	def motion_plan(self, q_start, q_goal, q_min, q_max):
 		# q_start: list of joint values of the robot at the starting position.
@@ -254,25 +285,16 @@ class MoveArm(object):
 			# You can use the random.random() function provided by Python. Remember that
 			# a "point" in configuration space must specify a value for each robot joint,
 			# and is thus 7-dimensional (in the case of this robot)!
-			q_random = [random.uniform(q_min[i], q_max[i]) for i in range(self.num_joints)]
-			rospy.loginfo('\n\n[q random]\t%s\n\n', q_random)
+			random_point = self.get_random_point()
+			rospy.loginfo('\n\n[q random]\t%s\n\n', random_point)
 
 			# Find the node already in your tree that is closest to this random point.
-			distances = [self.lists_norm(q_pos, q_random) for i,q_pos in enumerate(d["position_in_config_space"] for d in rrt_list)]
-			rospy.loginfo('\n\n[distances]\t%s\n\n', distances)
-
-			min_distance_index = distances.index(min(distances))
-			rospy.loginfo('\n\n[min distance index]\t%s\n\n', min_distance_index)
+			min_distance_index, closest_point = self.get_closest_point(rrt_list, random_point)
 
 			# Find the point that lies a predefined distance (e.g. 0.5) from this existing
 			# node in the direction of the random point.
-			vector = self.lists_sub(q_random, rrt_list[min_distance_index].get("position_in_config_space"))
-
-			vector /= numpy.linalg.norm(vector)
-			vector *= 0.5
-
-			rospy.loginfo('\n\n[min vector]\t%s\n\n', vector)
-
+			target_point = self.get_point_at_distance(closest_point, random_point, 0.5)
+			
 			# Check if the path from the closest node to this point is collision free.
 			# To do so you must discretize the path and check the resulting points along
 			# the path. You can use the is_state_valid method to do so. The MoveArm class
@@ -280,11 +302,11 @@ class MoveArm(object):
 			# each joint. You must make sure that you sample finely enough that this minimum
 			# is respected for each joint.
 
-			if self.check_collision(vector, q_random) == True:
+			if self.is_collision_free_path(closest_point, target_point) == True:
 				# If the path is collision free, add a new node with at the position of the
 				# point and with the closest node as a parent.
 
-				rrt_object.update({"position_in_config_space" : q_random})
+				rrt_object.update({"position_in_config_space" : random_point})
 				# parent_node = min_distance_index
 				rrt_object.update({"parent_node": min_distance_index})
 				rrt_list.append(rrt_object.copy())
@@ -292,15 +314,13 @@ class MoveArm(object):
 				# Check if the path from this new node to the goal is collision free.
 				# If so, add the goal as a node with the new node as a parent. The tree
 				# is complete and the loop can be exited.
-				vector = self.lists_sub(q_goal, q_random)
-				rospy.loginfo('\n\n[vector to goal]\t%s\n\n', vector)
 				
-				if self.check_collision(vector, q_goal) == True:
+				if self.is_collision_free_path(q_goal, random_point) == True:
 					parent_node = len(rrt_list)-1
 					rrt_object.update({"parent_node" : parent_node})
 					rrt_object.update({"position_in_config_space" : q_goal})
 					rrt_list.append(rrt_object.copy())
-					rospy.loginfo('\n\n[] goal node reached\n\n')
+					rospy.loginfo('\n\n> goal node reached\n\n')
 					break
 				else:
 					rospy.loginfo('\n\n[2] invalid state\n\n')
@@ -311,8 +331,7 @@ class MoveArm(object):
 
 			rospy.loginfo('\n\n[len(RRT list)]\t%s\n\n', len(rrt_list))
 			now = rospy.get_rostime().secs
-			rospy.loginfo('\n\n[time]\t%s\n\n', now-begin)
-
+			#rospy.loginfo('\n\n[time]\t%s\n\n', now-begin)
 			#raw_input()
 		
 		# Trace the tree back from the goal to the root and for each
@@ -346,10 +365,8 @@ class MoveArm(object):
 
 		for i in range(len(q_list)-2):
 
-			v = self.lists_sub(q_list[i+2], q_list[i])
-
-			if self.check_collision(v, q_list[i+2]) == False:
-				q_list_copy.append(q_list_copy[i])
+			if self.is_collision_free_path(q_list[i], q_list[i+2]) == False:
+				q_list_copy.append(q_list[i])
 
 		q_list_copy.append(q_list[-1])
 		q_list = q_list_copy
