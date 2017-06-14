@@ -186,57 +186,50 @@ class MoveArm(object):
 		res = self.state_valid_service(req)
 		return res.valid
 
-	def get_step_vector(self, closest_point, target_point, step_size):
-		v = self.lists_norm(target_point, closest_point)
-		v *= step_size
-		return v
+	def get_vector(self, p1, p2):
+		return numpy.subtract(p1,p2)
+
+	def get_unit_vector(self, p1, p2):
+		v = self.get_vector(p1, p2)
+		return v / numpy.linalg.norm(v)
+		'''
+	def get_step_size(self, v):
+		return max(numpy.absolute(numpy.true_divide(v, self.q_sample)))
+	'''
+	def get_step_vector(self, vector, step):
+		return 1/step * vector
+
+	def get_distance(self, p1, p2):
+		return numpy.linalg.norm(self.get_vector(p1, p2))
+	
+	def discretize_path(self, closest_point, target_point):
+		v = self.get_unit_vector(target_point, closest_point)
+		# Determine step_size on path
+		#step_size = self.get_step_size(v)
+		step_size = 0.5
+		# Create a small vector of length step_size
+		step_vector = self.get_step_vector(v, step_size)
+		#
+		num_points = self.get_distance(target_point, closest_point) / numpy.linalg.norm(step_vector)
+		num_points += 1
+		# Do small steps along the vector in the direction of the target_point
+		return numpy.outer(numpy.arange(1, num_points+1), step_vector) + closest_point
 
 	def is_collision_free_path(self, closest_point, target_point):
 		# closest ----> target
 
-		# Determine step_size on path
-		step_size = 0.25
-		#step_size = get_step_size(closest_point, target_point, self.q_sample)
-		# Create a small vector of length step_size
-		step_vector = self.get_step_vector(closest_point, target_point, step_size)
-		# Do small steps along the vector in the direction of the target_point
-		path = numpy.outer(numpy.arange(1, step_size), step_vector) + closest_point
+		path = self.discretize_path(closest_point, target_point)
+		
 		for row in path:
 			if self.is_state_valid(row) == False:
 				return False
 		return True
-
-		'''
-		k = max(numpy.absolute(self.lists_div(vector, self.q_sample)))
-		#n = max(numpy.absolute(map(int, self.lists_div(vector, self.q_sample))))
-		#rospy.loginfo('\n\n[n]\t%s\n\n', n)
-		#step = self.list_div(min(self.q_sample), vector)
-		step = vector / k
-		#n = map(int, q / (numpy.absolute(step)+0.9))+1
-		n = 100
-		#rospy.loginfo('\n\n[step]\t%s\n\n', step)
-		'''
-
-	def lists_sub(self, v1, v2):
-		return [v1[i]-v2[i] for i in range(self.num_joints)]
-
-	def lists_sum(self, v1, v2):
-		return [v1[i]+v2[i] for i in range(self.num_joints)]
-
-	def lists_norm(self, v1, v2):
-		return numpy.linalg.norm(self.lists_sub(v1,v2))
-
-	def lists_div(self, v1, v2):
-		return [v1[i]/v2[i] for i in range(self.num_joints)]
-
-	def list_div(self, v1, v2):
-		return [v1/v2[i] for i in range(self.num_joints)]
 	
 	def get_random_point(self):
 		return [random.uniform(self.q_min[i], self.q_max[i]) for i in range(self.num_joints)]
 
 	def get_closest_point(self, tree, q):
-		distances = [self.lists_norm(q_pos, q) for i,q_pos in enumerate(d["position_in_config_space"] for d in tree)]
+		distances = [self.get_distance(q_pos, q) for i,q_pos in enumerate(d["position_in_config_space"] for d in tree)]
 		rospy.loginfo('\n\n[distances]\t%s\n\n', distances)
 		min_distance_index = distances.index(min(distances))
 		rospy.loginfo('\n\n[min distance index]\t%s\n\n', min_distance_index)
@@ -244,10 +237,9 @@ class MoveArm(object):
 		return min_distance_index, closest_point
 
 	def get_point_at_distance(self, closest_point, random_point, K):
-		vector = self.lists_sub(random_point, closest_point)
-		vector /= numpy.linalg.norm(vector)
+		vector = self.get_unit_vector(random_point, closest_point)
 		vector *= K
-		vector = self.lists_sum(vector, closest_point)
+		vector = numpy.add(vector, closest_point)
 		rospy.loginfo('\n\n[target point]\t%s\n\n', vector)
 		return vector
 			   
