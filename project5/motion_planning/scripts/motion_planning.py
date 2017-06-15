@@ -186,34 +186,28 @@ class MoveArm(object):
 		res = self.state_valid_service(req)
 		return res.valid
 
-	def get_vector(self, p1, p2):
-		return numpy.subtract(p1,p2)
+	get_vector = lambda self, p1, p2: numpy.subtract(p1,p2)
 
 	def get_unit_vector(self, p1, p2):
 		v = self.get_vector(p1, p2)
 		return v / numpy.linalg.norm(v)
-		'''
-	def get_step_size(self, v):
-		return max(numpy.absolute(numpy.true_divide(v, self.q_sample)))
-	'''
-	def get_step_vector(self, vector, step):
-		return 1/step * vector
 
-	def get_distance(self, p1, p2):
-		return numpy.linalg.norm(self.get_vector(p1, p2))
+	get_step_vector = lambda self, vector, n: numpy.true_divide(1,n-1) * vector
+
+	get_distance = lambda self, p1, p2: numpy.linalg.norm(self.get_vector(p1, p2))
+
+	get_num_points = lambda self, p1, p2, step: numpy.floor(numpy.true_divide(self.get_distance(p1, p2), step))
 	
 	def discretize_path(self, closest_point, target_point):
-		v = self.get_unit_vector(target_point, closest_point)
 		# Determine step_size on path
-		#step_size = self.get_step_size(v)
-		step_size = 0.5
-		# Create a small vector of length step_size
-		step_vector = self.get_step_vector(v, step_size)
+		step_size = self.q_sample
 		#
-		num_points = self.get_distance(target_point, closest_point) / numpy.linalg.norm(step_vector)
-		num_points += 1
+		num_points = self.get_num_points(target_point, closest_point, step_size)
+		#
+		step_vector = self.get_step_vector(self.get_vector(target_point, closest_point), num_points)
 		# Do small steps along the vector in the direction of the target_point
-		return numpy.outer(numpy.arange(1, num_points+1), step_vector) + closest_point
+		bias_vector = self.get_vector(closest_point*num_points, target_point)
+		return numpy.outer(numpy.arange(1,max(num_points)+1), step_vector) + bias_vector
 
 	def is_collision_free_path(self, closest_point, target_point):
 		# closest ----> target
@@ -225,8 +219,7 @@ class MoveArm(object):
 				return False
 		return True
 	
-	def get_random_point(self):
-		return [random.uniform(self.q_min[i], self.q_max[i]) for i in range(self.num_joints)]
+	get_random_point = lambda self: [random.uniform(self.q_min[i], self.q_max[i]) for i in range(self.num_joints)]
 
 	def get_closest_point(self, tree, q):
 		distances = [self.get_distance(q_pos, q) for i,q_pos in enumerate(d["position_in_config_space"] for d in tree)]
