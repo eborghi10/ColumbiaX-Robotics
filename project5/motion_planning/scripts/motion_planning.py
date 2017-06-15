@@ -291,7 +291,7 @@ class MoveArm(object):
 				# If the path is collision free, add a new node with at the position of the
 				# point and with the closest node as a parent.
 
-				rrt_object.update({"position_in_config_space" : random_point})
+				rrt_object.update({"position_in_config_space" : target_point})
 				# parent_node = min_distance_index
 				rrt_object.update({"parent_node": min_distance_index})
 				rrt_list.append(rrt_object.copy())
@@ -300,7 +300,7 @@ class MoveArm(object):
 				# If so, add the goal as a node with the new node as a parent. The tree
 				# is complete and the loop can be exited.
 				
-				if self.is_collision_free_path(random_point, q_goal) == True:
+				if self.is_collision_free_path(target_point, q_goal) == True:
 					parent_node = len(rrt_list)-1
 					rrt_object.update({"parent_node" : parent_node})
 					rrt_object.update({"position_in_config_space" : q_goal})
