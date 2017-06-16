@@ -192,21 +192,24 @@ class MoveArm(object):
 		v = self.get_vector(p1, p2)
 		return v / numpy.linalg.norm(v)
 
-	get_step_vector = lambda self, vector, n: numpy.true_divide(1,n-1) * vector
+	#get_step_vector = lambda self, vector, n: numpy.true_divide(1,n-1) * vector
+	get_step_vector = lambda self, vector, n: vector/n
 
 	get_distance = lambda self, p1, p2: numpy.linalg.norm(self.get_vector(p1, p2))
 
-	get_num_points = lambda self, p1, p2, step: numpy.floor(numpy.true_divide(self.get_distance(p1, p2), step))
+	get_num_points = lambda self, p1, p2, step: numpy.ceil(numpy.true_divide(abs(self.get_vector(p1, p2)), step))
 	
 	def discretize_path(self, closest_point, target_point):
 		# Determine step_size on path
+		#step_size = numpy.multiply(self.q_sample, 0.5)
 		step_size = self.q_sample
 		#
 		num_points = self.get_num_points(target_point, closest_point, step_size)
 		#
 		step_vector = self.get_step_vector(self.get_vector(target_point, closest_point), num_points)
 		# Do small steps along the vector in the direction of the target_point
-		bias_vector = self.get_vector(closest_point*num_points, target_point)
+		#bias_vector = numpy.true_divide(self.get_vector(closest_point*num_points, target_point), num_points-1)
+		bias_vector = closest_point
 		return numpy.outer(numpy.arange(1,max(num_points)+1), step_vector) + bias_vector
 
 	def is_collision_free_path(self, closest_point, target_point):
@@ -344,7 +347,7 @@ class MoveArm(object):
 		# constructing the tree, you can check if the path between any
 		# two points in this list is collision free. You can delete any
 		# points between two points connected by a collision free path.
-
+		'''
 		q_list_copy = []
 		q_list_copy.append(q_list[0])
 
@@ -355,7 +358,7 @@ class MoveArm(object):
 
 		q_list_copy.append(q_list[-1])
 		q_list = q_list_copy
-		
+		'''
 		# Return the resulting trimmed path
 		#q_list = [q_start, q_goal]
 		#rospy.loginfo('\n\n[q list size]\t%s\n\n', len(q_list))
