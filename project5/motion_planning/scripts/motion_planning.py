@@ -192,25 +192,20 @@ class MoveArm(object):
 		v = self.get_vector(p1, p2)
 		return v / numpy.linalg.norm(v)
 
-	#get_step_vector = lambda self, vector, n: numpy.true_divide(1,n-1) * vector
-	get_step_vector = lambda self, vector, n: vector/n
-
 	get_distance = lambda self, p1, p2: numpy.linalg.norm(self.get_vector(p1, p2))
 
-	get_num_points = lambda self, p1, p2, step: numpy.ceil(numpy.true_divide(abs(self.get_vector(p1, p2)), step))
+	get_max_num_points = lambda self, p1, p2, step: max(numpy.ceil(numpy.true_divide(abs(self.get_vector(p1, p2)), step)))
 	
 	def discretize_path(self, closest_point, target_point):
 		# Determine step_size on path
-		#step_size = numpy.multiply(self.q_sample, 0.5)
 		step_size = self.q_sample
 		#
-		num_points = self.get_num_points(target_point, closest_point, step_size)
+		max_num_points = self.get_max_num_points(target_point, closest_point, step_size)
 		#
-		step_vector = self.get_step_vector(self.get_vector(target_point, closest_point), num_points)
-		# Do small steps along the vector in the direction of the target_point
-		#bias_vector = numpy.true_divide(self.get_vector(closest_point*num_points, target_point), num_points-1)
-		bias_vector = closest_point
-		return numpy.outer(numpy.arange(1,max(num_points)+1), step_vector) + bias_vector
+		m = numpy.true_divide(self.get_vector(target_point, closest_point), max_num_points-1)
+		b = numpy.true_divide(numpy.subtract(numpy.multiply(closest_point, max_num_points), target_point), max_num_points-1)
+		T = [m*i+b for i in range(int(max_num_points)+1)]
+		return T
 
 	def is_collision_free_path(self, closest_point, target_point):
 		# closest ----> target
@@ -226,9 +221,7 @@ class MoveArm(object):
 
 	def get_closest_point(self, tree, q):
 		distances = [self.get_distance(q_pos, q) for i,q_pos in enumerate(d["position_in_config_space"] for d in tree)]
-		rospy.loginfo('\n\n[distances]\t%s\n\n', distances)
 		min_distance_index = distances.index(min(distances))
-		rospy.loginfo('\n\n[min distance index]\t%s\n\n', min_distance_index)
 		closest_point = tree[min_distance_index].get("position_in_config_space")
 		return min_distance_index, closest_point
 
@@ -236,7 +229,6 @@ class MoveArm(object):
 		vector = self.get_unit_vector(random_point, closest_point)
 		vector *= K
 		vector = numpy.add(vector, closest_point)
-		rospy.loginfo('\n\n[target point]\t%s\n\n', vector)
 		return vector
 			   
 	def motion_plan(self, q_start, q_goal, q_min, q_max):
@@ -320,7 +312,6 @@ class MoveArm(object):
 			rospy.loginfo('\n\n[len(RRT list)]\t%s\n\n', len(rrt_list))
 			now = rospy.get_rostime().secs
 			#rospy.loginfo('\n\n[time]\t%s\n\n', now-begin)
-			#raw_input()
 		
 		# Trace the tree back from the goal to the root and for each
 		# node insert the position in configuration space to a list of
@@ -347,7 +338,7 @@ class MoveArm(object):
 		# constructing the tree, you can check if the path between any
 		# two points in this list is collision free. You can delete any
 		# points between two points connected by a collision free path.
-		'''
+
 		q_list_copy = []
 		q_list_copy.append(q_list[0])
 
@@ -358,10 +349,8 @@ class MoveArm(object):
 
 		q_list_copy.append(q_list[-1])
 		q_list = q_list_copy
-		'''
+
 		# Return the resulting trimmed path
-		#q_list = [q_start, q_goal]
-		#rospy.loginfo('\n\n[q list size]\t%s\n\n', len(q_list))
 		rospy.loginfo('\n\n[q list]\n\n%s\n\n', q_list)
 		return q_list
 
