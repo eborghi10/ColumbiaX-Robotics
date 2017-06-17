@@ -6,14 +6,18 @@
   <xacro:include filename="$(find lwr_defs)/defs/materials.xml"/>
 
   <link name="world_link">
-  
-    <inertial>
+    <!-- Removing inertial tag due to warning:
+    The root link base_footprint has an inertia specified in the URDF, 
+    but KDL does not support a root link with an inertia. 
+    As a workaround, you can add an extra dummy link to your URDF. -->
+
+    <!--inertial>
       <mass value="50.0"/>
       <com xyz="0 0 0"/>
       <inertia  ixx="0.01" ixy="0.00"  ixz="0.00"
                 iyy="0.01" iyz="0.00"
                 izz="0.01" />
-    </inertial>
+    </inertial-->
 
     <visual>
       <origin xyz="0 0 0.1" rpy="0 0 0"/>

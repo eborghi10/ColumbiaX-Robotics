@@ -6,12 +6,12 @@
 
   <xacro:include filename="$(find lwr_defs)/defs/util_defs.xml"/>
 
-  <property name="arm_elem_base_mass" value="2.0"/>
-  <property name="arm_elem_link_mass" value="2.0"/>
-  <property name="arm_elem_end_link_mass" value="2.0"/>
-  <property name="arm_elem_ball_link_mass" value="2.0"/>
+  <xacro:property name="arm_elem_base_mass" value="2.0"/>
+  <xacro:property name="arm_elem_link_mass" value="2.0"/>
+  <xacro:property name="arm_elem_end_link_mass" value="2.0"/>
+  <xacro:property name="arm_elem_ball_link_mass" value="2.0"/>
 
-  <property name="arm_velocity_scale_factor" value="1"/>
+  <xacro:property name="arm_velocity_scale_factor" value="1"/>
 
   <!-- right is either 1 (for right arm) or -1 (for left arm) -->
   <xacro:macro name="kuka_lwr_arm" params="parent name right *origin">

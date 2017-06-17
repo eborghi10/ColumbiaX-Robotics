@@ -1,13 +1,20 @@
 <launch>
 
   <param name="robot_description" 
-	 command="$(find xacro)/xacro '$(find lwr_defs)/robots/kuka_lwr_arm.urdf.xml'" />
+	 command="$(find xacro)/xacro --inorder '$(find lwr_defs)/robots/kuka_lwr_arm.urdf.xml'" />
 
-  <node name="robot_sim_prj5" pkg="robot_sim_prj5" type="robot_sim_bringup" respawn="false" output="screen"/>
-  <!--node name="fwk" pkg="forward_kinematics" type="fwk.py" respawn="false" output="screen"/-->
-
-  <node pkg="robot_state_publisher" type="robot_state_publisher" 
-  	name="robot_state_publisher" output="screen" >
+  <node 
+  	name="robot_sim_prj5" 
+  	pkg="robot_sim_prj5" 
+  	type="robot_sim_bringup" 
+  	respawn="false" 
+  	output="screen"/>
+  
+  <node 
+  	pkg="robot_state_publisher" 
+  	type="robot_state_publisher" 
+  	name="robot_state_publisher" 
+  	output="screen">
   </node>
 
 </launch>

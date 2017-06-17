@@ -73,7 +73,7 @@ class ObstacleGenerator(object):
     def simple_obs(self):
         self.no_obs()
         pose_stamped = geometry_msgs.msg.PoseStamped()
-        pose_stamped.header.frame_id = "world_link"
+        pose_stamped.header.frame_id = "/world_link"
         pose_stamped.header.stamp = rospy.Time(0)
 
         pose_stamped.pose = convert_to_message( tf.transformations.translation_matrix((0.5, 0.25, 0.2)) )
@@ -82,7 +82,7 @@ class ObstacleGenerator(object):
 
         obs = MarkerArray()
         obj = Marker()
-        obj.header.frame_id = "world_link"
+        obj.header.frame_id = "/world_link"
         obj.header.stamp = rospy.Time(0)
         obj.ns = 'obstacle'
         obj.id = 1
@@ -102,7 +102,7 @@ class ObstacleGenerator(object):
     def complex_obs(self):
         self.no_obs()
         pose_stamped = geometry_msgs.msg.PoseStamped()
-        pose_stamped.header.frame_id = "world_link"
+        pose_stamped.header.frame_id = "/world_link"
         pose_stamped.header.stamp = rospy.Time(0)
         pose_stamped.pose = convert_to_message( tf.transformations.translation_matrix((0.5, 0.25, 0.4)) )
         self.scene.add_box("obs1", pose_stamped,(0.1,0.1,0.8))
@@ -113,7 +113,7 @@ class ObstacleGenerator(object):
 
         obs = MarkerArray()
         obj1 = Marker()
-        obj1.header.frame_id = "world_link"
+        obj1.header.frame_id = "/world_link"
         obj1.header.stamp = rospy.Time(0)
         obj1.ns = 'obstacle'
         obj1.id = 1
@@ -130,7 +130,7 @@ class ObstacleGenerator(object):
         obs.markers.append(obj1)
 
         obj2 = Marker()
-        obj2.header.frame_id = "world_link"
+        obj2.header.frame_id = "/world_link"
         obj2.header.stamp = rospy.Time(0)
         obj2.ns = 'obstacle'
         obj2.id = 2
@@ -151,7 +151,7 @@ class ObstacleGenerator(object):
     def super_obs(self):
         self.no_obs()
         pose_stamped = geometry_msgs.msg.PoseStamped()
-        pose_stamped.header.frame_id = "world_link"
+        pose_stamped.header.frame_id = "/world_link"
         pose_stamped.header.stamp = rospy.Time(0)
         pose_stamped.pose = convert_to_message( tf.transformations.translation_matrix((0.5, 0.25, 0.4)) )
         self.scene.add_box("obs1", pose_stamped,(0.1,0.1,0.8))
@@ -168,7 +168,7 @@ class ObstacleGenerator(object):
 
         obs = MarkerArray()
         obj1 = Marker()
-        obj1.header.frame_id = "world_link"
+        obj1.header.frame_id = "/world_link"
         obj1.header.stamp = rospy.Time(0)
         obj1.ns = 'obstacle'
         obj1.id = 1
@@ -185,7 +185,7 @@ class ObstacleGenerator(object):
         obs.markers.append(obj1)
 
         obj2 = Marker()
-        obj2.header.frame_id = "world_link"
+        obj2.header.frame_id = "/world_link"
         obj2.header.stamp = rospy.Time(0)
         obj2.ns = 'obstacle'
         obj2.id = 2
@@ -202,7 +202,7 @@ class ObstacleGenerator(object):
         obs.markers.append(obj2)
 
         obj3 = Marker()
-        obj3.header.frame_id = "world_link"
+        obj3.header.frame_id = "/world_link"
         obj3.header.stamp = rospy.Time(0)
         obj3.ns = 'obstacle'
         obj3.id = 3
@@ -219,7 +219,7 @@ class ObstacleGenerator(object):
         obs.markers.append(obj3)
 
         obj4 = Marker()
-        obj4.header.frame_id = "world_link"
+        obj4.header.frame_id = "/world_link"
         obj4.header.stamp = rospy.Time(0)
         obj4.ns = 'obstacle'
         obj4.id = 4
