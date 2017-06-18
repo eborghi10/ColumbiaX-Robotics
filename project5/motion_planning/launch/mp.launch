@@ -11,11 +11,11 @@
   </include>
 
 
-  <node 
+  <node
     pkg="motion_planning" 
     type="marker_control.py" 
     name="marker_control" 
-    output="screen"/>
+    output="screen" />
 
   <!--node
   	pkg="motion_planning"

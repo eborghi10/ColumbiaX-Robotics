@@ -6,7 +6,7 @@
 
 #include <ros/ros.h>
 
-namespace robot_sim {
+namespace robot_sim_prj5 {
 
 class Robot
 {
@@ -43,4 +43,4 @@ class Robot
   void update();
 };
 
-} //namespace robot_sim
+} //namespace robot_sim_prj5

@@ -6,9 +6,9 @@
 #include <ros/ros.h>
 #include <trajectory_msgs/JointTrajectory.h>
 
-#include "robot_sim/robot.h"
+#include "robot_sim_prj5/robot.h"
 
-namespace robot_sim {
+namespace robot_sim_prj5 {
 
 class TrajectoryExecuter
 {
@@ -41,4 +41,4 @@ class TrajectoryExecuter
   void stopRobot();
 };
 
-} //namespace robot_sim
+} //namespace robot_sim_prj5

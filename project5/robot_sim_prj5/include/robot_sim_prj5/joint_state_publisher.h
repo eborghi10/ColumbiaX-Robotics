@@ -5,9 +5,9 @@
 
 #include <ros/ros.h>
 
-#include "robot_sim/robot.h"
+#include "robot_sim_prj5/robot.h"
 
-namespace robot_sim {
+namespace robot_sim_prj5 {
 
 class JointStatePublisher 
 {
@@ -27,4 +27,4 @@ class JointStatePublisher
   void callback(const ros::TimerEvent&);
 };
 
-} //namespace robot_sim
+} //namespace robot_sim_prj5

@@ -5,9 +5,9 @@
 #include <ros/ros.h>
 #include <sensor_msgs/JointState.h>
 
-#include "robot_sim/robot.h"
+#include "robot_sim_prj5/robot.h"
 
-namespace robot_sim {
+namespace robot_sim_prj5 {
 
 class VelocityController
 {
@@ -26,4 +26,4 @@ class VelocityController
   void callback(const sensor_msgs::JointState::ConstPtr&);
 };
 
-} //namespace robot_sim
+} //namespace robot_sim_prj5

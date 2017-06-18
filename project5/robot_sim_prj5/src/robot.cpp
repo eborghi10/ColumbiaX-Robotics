@@ -1,6 +1,6 @@
-#include "robot_sim/robot.h"
+#include "robot_sim_prj5/robot.h"
 
-namespace robot_sim {
+namespace robot_sim_prj5 {
 
 Robot::Robot(const std::map<std::string, size_t> &name_map)
 {
@@ -121,4 +121,4 @@ void Robot::update()
   }
 }
 
-} //namespace robot_sim
+} //namespace robot_sim_prj5

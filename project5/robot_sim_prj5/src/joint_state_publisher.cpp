@@ -1,8 +1,8 @@
-#include "robot_sim/joint_state_publisher.h"
+#include "robot_sim_prj5/joint_state_publisher.h"
 
 #include <sensor_msgs/JointState.h>
 
-namespace robot_sim {
+namespace robot_sim_prj5 {
 
 bool JointStatePublisher::init(double rate)
 {
