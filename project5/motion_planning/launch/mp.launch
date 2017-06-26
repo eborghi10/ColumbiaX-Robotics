@@ -23,6 +23,16 @@
   	name="motion_planning"
   	output="screen" /-->
 
+  <!--
+    This static transform solves the "TF Exception" message when running the grader
+  -->
+  <node
+  	pkg="tf"
+  	type="static_transform_publisher"
+  	name="world_link_node"
+  	args="0 0 0.2 0 0 0 world_link calib_lwr_arm_base_link 100"
+  />
+
   <node 
     pkg="rviz" 
     type="rviz" 
