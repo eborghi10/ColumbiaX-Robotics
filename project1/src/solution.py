@@ -2,7 +2,7 @@
 import rospy
 
 from std_msgs.msg import Int16
-from project1_solution.msg import TwoInts
+from project1.msg import TwoInts
 
 def callback(data):
 	msg = Int16(data.a + data.b)

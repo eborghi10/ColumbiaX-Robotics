@@ -1,8 +1,8 @@
 <?xml version="1.0"?>
 <package>
-  <name>project1_solution</name>
+  <name>project1</name>
   <version>0.0.0</version>
-  <description>The project1_solution package</description>
+  <description>The project1 package</description>
 
   <!-- One maintainer tag required, multiple allowed, one person per tag --> 
   <!-- Example:  -->

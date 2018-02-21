@@ -1,7 +1,7 @@
 <launch>
-	<node pkg="project1_solution"
+	<node pkg="project1"
 	  	  type="solution.py"
-	  	  name="project1_solution"
+	  	  name="project1"
 	  	  output="screen" 
 	></node>
 </launch>

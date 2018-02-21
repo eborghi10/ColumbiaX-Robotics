@@ -1,6 +1,6 @@
 # CSMM.103x - ColumbiaX | Robotics | edX
 
-1) **project1_solution**: publish and subscribe custom messages.
+1) **project1**: publish and subscribe custom messages.
 
 2) **tf2_examples**: basic example using the package _tf2_ for coordinate system's transformations.
 
