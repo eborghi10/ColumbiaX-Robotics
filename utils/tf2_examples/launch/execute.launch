@@ -1,0 +1,4 @@
+<launch>
+    <include file="$(find marker_publisher)/launch/execute.launch" />
+    <node pkg="tf2_examples" type="tf2_examples.py" name="tf2_example_node" output="screen"/>
+</launch>

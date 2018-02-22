@@ -1,16 +1,10 @@
 #!/usr/bin/env python
 
 '''
-To run code:
-
-$ roscore
-$ rosrun rviz rviz
-$ rosrun tf2_examples tf2_examples.py
-
 Axis in rviz:
-[X] : red
-[Y] : green
-[Z] : blue
+[X] : red   (R)
+[Y] : green (G)
+[Z] : blue  (B)
 '''
 
 import rospy

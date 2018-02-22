@@ -12,6 +12,7 @@ find_package(catkin REQUIRED COMPONENTS
   rospy
   tf
   tf2_ros
+  marker_publisher
 )
 
 ## System dependencies are found with CMake's conventions
