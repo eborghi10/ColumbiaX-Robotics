@@ -133,15 +133,15 @@ class ForwardKinematics(object):
         # We start with the identity
         T = tf.transformations.identity_matrix()
         
-        #rospy.loginfo("[Link Names]: %s", link_names)
+        #rospy.logdebug("[Link Names]: %s", link_names)
         
-        #rospy.loginfo("[Joint Origins x,y,z]: %s", joints[0].origin.xyz)
-        #rospy.loginfo("[Joint Types]: %s", joints[0].type)
-        #rospy.loginfo("[Joint Names]: %s", joints[0].name)
-        #rospy.loginfo("[Joint Axis]: %s", joints[0].axis)   
+        #rospy.logdebug("[Joint Origins x,y,z]: %s", joints[0].origin.xyz)
+        #rospy.logdebug("[Joint Types]: %s", joints[0].type)
+        #rospy.logdebug("[Joint Names]: %s", joints[0].name)
+        #rospy.logdebug("[Joint Axis]: %s", joints[0].axis)   
 
-        #rospy.loginfo("[Joint Name Values]: %s", joint_values.name)
-        #rospy.loginfo("[Joint Position Values]: %s", joint_values.position)
+        #rospy.logdebug("[Joint Name Values]: %s", joint_values.name)
+        #rospy.logdebug("[Joint Position Values]: %s", joint_values.position)
         
         '''
         the transform from the world to link i should be published with world_link as the parent
@@ -154,8 +154,8 @@ class ForwardKinematics(object):
         '''
 
         for it in range(len(joints)):
-            #rospy.loginfo("[%s]: %s", it+1, joints[it+1].name)
-            #rospy.loginfo("[%s]: Parent=%s, Child=%s", it+1, link_names[it], link_names[it+1])
+            #rospy.logdebug("[%s]: %s", it+1, joints[it+1].name)
+            #rospy.logdebug("[%s]: Parent=%s, Child=%s", it+1, link_names[it], link_names[it+1])
 
             # translation part respect of the previous frame
             D = tf.transformations.translation_matrix(joints[it].origin.xyz)
@@ -167,7 +167,7 @@ class ForwardKinematics(object):
 
             except ValueError as e:
                 q = 0.0
-                #rospy.loginfo("%s", e)
+                #rospy.logdebug("%s", e)
             
             if joints[it].type == 'revolute':
                 # Obtain the rotation axis of the frame
@@ -184,7 +184,7 @@ class ForwardKinematics(object):
             all_transforms.transforms.append(
                 convert_to_message(T, link_names[it], 'world_link'))
 
-        #rospy.loginfo("all_transforms: %s", all_transforms.transforms)
+        #rospy.logdebug("all_transforms: %s", all_transforms.transforms)
         return all_transforms
        
 if __name__ == '__main__':
