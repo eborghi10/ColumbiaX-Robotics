@@ -41,4 +41,4 @@ The function must return one tf message. The transforms field of this message mu
 
 It will help to get familiar with  the URDF documentation. In particular, the documentation for the URDF Joint element will be very helpful in understanding the nature of the joint object that is being passed to the `compute_transforms` function, and what you must do with the data in each joint object.
 
-![ROS Graph](resources/rosgraph.png)
+![ROS Graph](../utils/resources/rosgraph.png)
