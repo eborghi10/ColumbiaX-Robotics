@@ -2,7 +2,7 @@
 
 1) **project1**: publish and subscribe custom messages.
 
-2) **tf2_examples**: basic example using the package _tf2_ for coordinate system's transformations.
+2) **tf2_examples**: basic example using the _tf2_ package for coordinate system's transformations.
 
 3) **project2_solution**: program that uses tf to describe the poses between a robot, its camera and an object.
 
