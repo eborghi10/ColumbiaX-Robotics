@@ -28,36 +28,36 @@ def cartesian_control(joint_transforms, b_T_ee_current, b_T_ee_desired,
     num_joints = len(joint_transforms)
     dq = numpy.zeros(num_joints)
     #-------------------- Fill my code here ---------------------------
-    rospy.loginfo('\n\nnumber of joints :\t%s\n\n', num_joints)
+    rospy.logdebug('\n\nnumber of joints :\t%s\n\n', num_joints)
     # Prints the arguments for debugging
     # joint_transforms: list containing the transforms of all the joints with
     # respect to the base frame
-    #rospy.loginfo('\n\njoint_transforms\n\n %s\n\n', joint_transforms)
-    #rospy.loginfo('\n\nb_T_ee_current\n\n%s\n\n', b_T_ee_current)
-    #rospy.loginfo('\n\nb_T_ee_desired\n\n%s\n\n', b_T_ee_desired)
+    #rospy.logdebug('\n\njoint_transforms\n\n %s\n\n', joint_transforms)
+    #rospy.logdebug('\n\nb_T_ee_current\n\n%s\n\n', b_T_ee_current)
+    #rospy.logdebug('\n\nb_T_ee_desired\n\n%s\n\n', b_T_ee_desired)
 
     # compute the desired change in end-effector pose from b_T_ee_current to b_T_ee_desired
     # the end-effector is in his own coordinate frame
     # is a vector that represents the desired displacement
     ee_T_b = tf.transformations.inverse_matrix(b_T_ee_current)
     ee_T_ee = numpy.dot(ee_T_b, b_T_ee_desired)
-    rospy.loginfo('\n\nb_T_ee :\n\n%s\n\n', ee_T_ee)
+    rospy.logdebug('\n\nb_T_ee :\n\n%s\n\n', ee_T_ee)
     # get the translation part
     b_t_ee = tf.transformations.translation_from_matrix(ee_T_ee)
-    rospy.loginfo('\n\nTranslation\t%s\n\n', b_t_ee)
+    rospy.logdebug('\n\nTranslation\t%s\n\n', b_t_ee)
     # get the rotation part
     b_R_ee = ee_T_ee[:3,:3]
-    rospy.loginfo('\n\nRotation\n\n%s\n\n', b_R_ee)
+    rospy.logdebug('\n\nRotation\n\n%s\n\n', b_R_ee)
     # Obtain the necessary angles in a tuple for each axis
     angle, axis = rotation_from_matrix(ee_T_ee)
-    rospy.loginfo('\n\nangle\t%s\t\taxis\t%s\n\n', angle,axis)
+    rospy.logdebug('\n\nangle\t%s\t\taxis\t%s\n\n', angle,axis)
     ROT = numpy.dot(angle,axis)
-    rospy.loginfo('\n\nROT\t%s\n\n', ROT)
+    rospy.logdebug('\n\nROT\t%s\n\n', ROT)
     # Invert the rotation matrix
     # to obtain ee_R_b = (b_R_ee)^-1 = (b_R_ee).T 
     # because rotation matrices are ORTHOGONAL.
     ee_R_b = tf.transformations.inverse_matrix(b_R_ee)
-    rospy.loginfo('\n\nInverse matrix :\n\n%s\n\n', ee_R_b)
+    rospy.logdebug('\n\nInverse matrix :\n\n%s\n\n', ee_R_b)
 
     # convert the desired change into a desired end-effector velocity
     # (the simplest form is to use a PROPORTIONAL CONTROLLER)
@@ -67,7 +67,7 @@ def cartesian_control(joint_transforms, b_T_ee_current, b_T_ee_desired,
     rot_gain = 1.5
 
     delta_X = numpy.append(b_t_ee * lin_gain, ROT * rot_gain)
-    rospy.loginfo('\n\nDelta X\t%s\n\n', delta_X)
+    rospy.logdebug('\n\nDelta X\t%s\n\n', delta_X)
 
     # velocity controller in end-effector space
     proportional_gain = 1
@@ -78,7 +78,7 @@ def cartesian_control(joint_transforms, b_T_ee_current, b_T_ee_desired,
     if numpy.linalg.norm(x_dot) > 1.0:
         x_dot /= max(x_dot)
 	'''
-    rospy.loginfo('\n\nx_dot\t%s\n\n', x_dot)
+    rospy.logdebug('\n\nx_dot\t%s\n\n', x_dot)
 
     # NUMERICALLY compute the robot Jacobian. For each joint compute the matrix
     # that relates the velocity of that joint to the velocity of the end-effector
@@ -95,7 +95,7 @@ def cartesian_control(joint_transforms, b_T_ee_current, b_T_ee_desired,
     for j in range(num_joints):
         # b_T_j (from base to joint j)
         b_T_j = joint_transforms[j]
-        #rospy.loginfo('\n\n[b_T_j]\n\n%s\n\n', b_T_j)
+        #rospy.logdebug('\n\n[b_T_j]\n\n%s\n\n', b_T_j)
         
         # Transformation to obtain the velocity in its own coordinate frame
         j_T_b = tf.transformations.inverse_matrix(b_T_j)
@@ -121,19 +121,19 @@ def cartesian_control(joint_transforms, b_T_ee_current, b_T_ee_desired,
                 ee_R_j,
                 axis=1), 
             axis=0)
-        #rospy.loginfo('\n\n[Vj]\n\n%s\n\n', Vj)
+        #rospy.logdebug('\n\n[Vj]\n\n%s\n\n', Vj)
 
         # Assuming that all the joints are revolute, we only use the z component
         J = numpy.column_stack((J, Vj[:,5])) 
 
-    rospy.loginfo('\n\nJacobian\n\n%s\n\n', J)
+    rospy.logdebug('\n\nJacobian\n\n%s\n\n', J)
 	
     # Compute the pseudo-inverse of the Jacobian to avoid numerical
     # issues that can arise from small singular values
     # Use the pseudo-inverse of the Jacobian to map from end-effector velocity to
     # joint velocities.
     J_pinv = numpy.linalg.pinv(J, rcond=1e-2)
-    rospy.loginfo('\n\nJacobian Pseudo-inverse\n\n%s\n\n', J_pinv)
+    rospy.logdebug('\n\nJacobian Pseudo-inverse\n\n%s\n\n', J_pinv)
 
     # map from end-effector velocity to joint velocities (angular in the z axis for all joints)
     dq = numpy.dot(J_pinv, x_dot)
@@ -144,13 +144,13 @@ def cartesian_control(joint_transforms, b_T_ee_current, b_T_ee_desired,
         # has more joints than DOF
 
         # q_current: list of all the current joint positions
-        rospy.loginfo('\n\nq_current\t%s\n\n', q_current)
+        rospy.logdebug('\n\nq_current\t%s\n\n', q_current)
         # q0_desired: desired position of the first joint to be used as
         # the secondary objective for null-space control. Again, the goal
         # of the secondary, null-space controller is to make the value of
         # the first joint be as close as possible to q0_desired, while not
         # affecting the pose of the end-effector.
-        rospy.loginfo('\n\nq0_desired\t%s\n\n', q0_desired)
+        rospy.logdebug('\n\nq0_desired\t%s\n\n', q0_desired)
 
         # find a joint velocity that brings the joint closer to the secondary objective.
         # use the Jacobian and its pseudo-inverse to project this velocity into the
@@ -163,7 +163,7 @@ def cartesian_control(joint_transforms, b_T_ee_current, b_T_ee_desired,
         #Then add the result to the joint velocities obtained for the primary objective
         dq = numpy.dot(J_pinv, x_dot) + dq_n
      
-    rospy.loginfo('\n\ndq\t%s\n\n', dq)
+    rospy.logdebug('\n\ndq\t%s\n\n', dq)
 	#----------------------------------------------------------------------
     return dq
     
