@@ -104,7 +104,7 @@ def publish_transforms():
 
     # displacement matrix of camera_frame
     D3 = tf.transformations.translation_matrix([0.0, 0.1, 0.1])
-    rospy.loginfo("\n\nD3 = %s\n", D3)
+    rospy.logdebug("\n\nD3 = %s\n", D3)
     
     # Only for the first run, we don't rotate the camera_frame
     # because it's an unknown parameter
@@ -113,7 +113,7 @@ def publish_transforms():
         R3 = tf.transformations.quaternion_matrix(tf.transformations.quaternion_from_euler(0,0,0))
 
 	T3 = tf.transformations.concatenate_matrices(D3, R3)
-	rospy.loginfo("T3 = %s\n", T3)
+	rospy.logdebug("T3 = %s\n", T3)
 
 	# Calculates the origin of coordinates from object_frame
 	# with respect to camera_frame
@@ -139,7 +139,7 @@ def publish_transforms():
 	# angle difference between x axis and the origin 
 	# of object_frame
 	angle = angle_between(x_axis, p2_camera)  
-    rospy.loginfo("angle = %s\n",angle*180/3.14159)
+    rospy.logdebug("angle = %s\n",angle*180/3.14159)
 
     # calculates the vector from which the x axis has to rotate
     v_normal = np.cross(x_axis,p2_camera)
@@ -161,7 +161,7 @@ def publish_transforms():
 
 if __name__ == '__main__':
 
-    rospy.init_node('project2_solution')
+    rospy.init_node('project2')
 
     br = tf2_ros.TransformBroadcaster()
     rospy.sleep(0.5)

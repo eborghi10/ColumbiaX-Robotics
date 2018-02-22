@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 2.8.3)
-project(project2_solution)
+project(project2)
 
 ## Add support for C++11, supported in ROS Kinetic and newer
 # add_definitions(-std=c++11)
@@ -103,7 +103,7 @@ find_package(catkin REQUIRED COMPONENTS
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
 #  INCLUDE_DIRS include
-#  LIBRARIES project2_solution
+#  LIBRARIES project2
  CATKIN_DEPENDS rospy roscpp
 #  DEPENDS system_lib
 )
@@ -118,7 +118,7 @@ catkin_package(
 
 ## Declare a C++ library
 # add_library(${PROJECT_NAME}
-#   src/${PROJECT_NAME}/project2_solution.cpp
+#   src/${PROJECT_NAME}/project2.cpp
 # )
 
 ## Add cmake target dependencies of the library
@@ -129,7 +129,7 @@ catkin_package(
 ## Declare a C++ executable
 ## With catkin_make all packages are built within a single CMake context
 ## The recommended prefix ensures that target names across packages don't collide
-# add_executable(${PROJECT_NAME}_node src/project2_solution_node.cpp)
+# add_executable(${PROJECT_NAME}_node src/project2_node.cpp)
 
 ## Rename C++ executable without prefix
 ## The above recommended prefix causes long target names, the following renames the
@@ -188,7 +188,7 @@ catkin_package(
 #############
 
 ## Add gtest based cpp test target and link libraries
-# catkin_add_gtest(${PROJECT_NAME}-test test/test_project2_solution.cpp)
+# catkin_add_gtest(${PROJECT_NAME}-test test/test_project2.cpp)
 # if(TARGET ${PROJECT_NAME}-test)
 #   target_link_libraries(${PROJECT_NAME}-test ${PROJECT_NAME})
 # endif()

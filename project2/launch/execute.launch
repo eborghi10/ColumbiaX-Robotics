@@ -1,9 +1,9 @@
 <launch>
 	
 	<node 
-		pkg="project2_solution"
+		pkg="project2"
 		type="solution.py"
-		name="project2_solution_node"
+		name="project2_node"
 		output="screen"
 	/>
 
@@ -12,7 +12,7 @@
 		type="rviz"
 		name="rviz"
 		output="screen"
-		args="-d $(find project2_solution)/launch/config.rviz"
+		args="-d $(find project2)/launch/config.rviz"
 	/>
 
 	<node 
