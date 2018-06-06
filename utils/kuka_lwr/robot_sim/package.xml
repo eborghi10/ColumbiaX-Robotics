@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <package>
-  
+
   <name>robot_sim</name>
   <version>0.0.0</version>
   <description>The robot_sim package</description>
@@ -19,5 +19,6 @@
   <run_depend>roscpp</run_depend>
   <run_depend>sensor_msgs</run_depend>
   <run_depend>urdf</run_depend>
+  <run_depend>robot_mover</run_depend>
 
 </package>

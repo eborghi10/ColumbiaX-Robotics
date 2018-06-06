@@ -5,9 +5,7 @@ project(robot_mover)
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
 find_package(catkin REQUIRED COMPONENTS
-  forward_kinematics
-  lwr_defs
-  robot_sim
+	roscpp
   std_msgs
   sensor_msgs
 )
@@ -24,7 +22,7 @@ find_package(catkin REQUIRED COMPONENTS
 catkin_package(
 #  INCLUDE_DIRS include
 #  LIBRARIES project2
-#  CATKIN_DEPENDS forward_kinematics lwr_defs robot_sim sensor_msgs
+ CATKIN_DEPENDS roscpp std_msgs sensor_msgs
 #  DEPENDS system_lib
 )
 

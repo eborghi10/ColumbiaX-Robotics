@@ -29,7 +29,7 @@ Parameters are as follows:
 - _joints_: a list of all the joints of the robot, in the same order as the links listed above. Each entry in this list is an object which contains the following fields:
 - _joint.origin.xyz_: the translation from the frame of the previous joint to this one
 - _joint.origin.rpy_: the rotation from the frame of the previous joint to this one, in ROLL-PITCH-YAW XYZ convention
-- _joint.type_: either `fixed` or `revolute`. A fixed joint does not move; it is meant to contain a static transform. 
+- _joint.type_: either `fixed` or `revolute`. A fixed joint does not move; it is meant to contain a static transform.
 - _joint.name_: the name of the current joint in the robot description
 - _joint.axis_: (only if type is 'revolute') the axis of rotation of the joint
 joint_values contains information about the current joint values in the robot. It contains information about all the joints, and the ordering can vary, so we must find the relevant value  for a particular joint you are considering. We can use the following fields:
@@ -41,4 +41,4 @@ The function must return one tf message. The transforms field of this message mu
 
 It will help to get familiar with  the URDF documentation. In particular, the documentation for the URDF Joint element will be very helpful in understanding the nature of the joint object that is being passed to the `compute_transforms` function, and what you must do with the data in each joint object.
 
-![ROS Graph](../utils/resources/rosgraph.png)
+![ROS Graph](../utils/kuka_lwr/resources/rosgraph.png)

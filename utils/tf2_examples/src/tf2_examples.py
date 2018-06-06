@@ -76,7 +76,7 @@ def publish_transforms():
 	'''
 	Translation between [F2] and [F3]:
 
-	It applies the inverse of T2, so the result will end up 
+	It applies the inverse of T2, so the result will end up
 	in F1.
 	'''
 	T2_inverse = tf.transformations.inverse_matrix(T2)
@@ -105,11 +105,15 @@ def publish_transforms():
 	'''
 
 if __name__ == '__main__':
-	
+
 	rospy.init_node('tf2_examples')
 
-	# Broadcast transformations within a node...
-	br = tf2_ros.TransformBroadcaster()
+	try:
+	    # Broadcast transformations within a node...
+		br = tf2_ros.TransformBroadcaster()
+	except tf2.TransformException as e:
+		print e
+
 	# ...for each half a second
 	rospy.sleep(0.5)
 

@@ -1,0 +1,35 @@
+{
+    "configurations": [
+        {
+            "browse": {
+                "databaseFilename": "",
+                "limitSymbolsToIncludedHeaders": true,
+                "path": [
+                    "/home/smyrno/catkin_ws/devel/include",
+                    "/opt/ros/kinetic/include",
+                    "/home/smyrno/catkin_ws/src/BB-8-ROS/bb_8_gazebo/include",
+                    "/home/smyrno/catkin_ws/src/my_ROS_mobile_robot/my_robot_base/include",
+                    "/home/smyrno/catkin_ws/src/robot_controllers/robot_controllers/include",
+                    "/home/smyrno/catkin_ws/src/robot_controllers/robot_controllers_interface/include",
+                    "/home/smyrno/catkin_ws/src/ColumbiaX-Robotics/utils/kuka_lwr/robot_sim/include",
+                    "/home/smyrno/catkin_ws/src/ColumbiaX-Robotics/project5/robot_sim_prj5/include",
+                    "/usr/include"
+                ]
+            },
+            "includePath": [
+                "/home/smyrno/catkin_ws/devel/include",
+                "/opt/ros/kinetic/include",
+                "/home/smyrno/catkin_ws/src/BB-8-ROS/bb_8_gazebo/include",
+                "/home/smyrno/catkin_ws/src/my_ROS_mobile_robot/my_robot_base/include",
+                "/home/smyrno/catkin_ws/src/robot_controllers/robot_controllers/include",
+                "/home/smyrno/catkin_ws/src/robot_controllers/robot_controllers_interface/include",
+                "/home/smyrno/catkin_ws/src/ColumbiaX-Robotics/utils/kuka_lwr/robot_sim/include",
+                "/home/smyrno/catkin_ws/src/ColumbiaX-Robotics/project5/robot_sim_prj5/include",
+                "/usr/include"
+            ],
+            "name": "Linux",
+            "intelliSenseMode": "clang-x64"
+        }
+    ],
+    "version": 3
+}

@@ -4,6 +4,7 @@
 $ roslaunch motion_planning mp.launch
 $ rosrun motion_planning motion_planning.py
 ```
+Right click on RViz > Run grader
 
 ## Description
 
@@ -22,7 +23,7 @@ It can be used the provided `is_state_valid(...)` method to check if a given poi
 
 ## Algorithm Overview
 
-The problem consists in findind a path that takes the robot from a give start to another end position without colliding with any objects on the way. This is the problem of motion planning. The RRT algorithm tackles this problem by placing nodes in configuration space at random and connecting them in a tree. Before a new node is added to the tree, the algorithm also checks if the path between them is collision free. Once the tree reaches the goal position, we can find a path between start and goal by following the tree back to its root. 
+The problem consists in findind a path that takes the robot from a give start to another end position without colliding with any objects on the way. This is the problem of motion planning. The RRT algorithm tackles this problem by placing nodes in configuration space at random and connecting them in a tree. Before a new node is added to the tree, the algorithm also checks if the path between them is collision free. Once the tree reaches the goal position, we can find a path between start and goal by following the tree back to its root.
 
 The algorithm follows the steps presented in the following steps:
 

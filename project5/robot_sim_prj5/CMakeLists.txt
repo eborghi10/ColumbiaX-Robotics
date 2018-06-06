@@ -13,8 +13,8 @@ find_package(Boost REQUIRED)
 catkin_package(
   INCLUDE_DIRS include
   LIBRARIES robot_sim_prj5
-  CATKIN_DEPENDS 
-    roscpp 
+  CATKIN_DEPENDS
+    roscpp
     sensor_msgs
     trajectory_msgs
     urdf
@@ -34,5 +34,5 @@ add_library(robot_sim_prj5
 )
 
 link_directories(/opt/ros/kinetic/lib/)
-add_executable(robot_sim_bringup src/robot_sim_bringup.cpp)
-target_link_libraries(robot_sim_bringup ${catkin_LIBRARIES} robot_sim_prj5 urdf)
+add_executable(robot_sim_bringup_prj5 src/robot_sim_bringup.cpp)
+target_link_libraries(robot_sim_bringup_prj5 ${catkin_LIBRARIES} robot_sim_prj5 urdf)

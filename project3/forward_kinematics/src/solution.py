@@ -9,7 +9,7 @@ import tf
 import tf.msg
 from urdf_parser_py.urdf import URDF
 
-""" 
+"""
 Starting from a computed transform T, creates a message that can be
 communicated over the ROS wire. In addition to the transform itself, the message
 also specifies who is related by this transform, the parent and the child.
@@ -27,9 +27,9 @@ def convert_to_message(T, child, parent):
     t.transform.rotation.x = rotation[0]
     t.transform.rotation.y = rotation[1]
     t.transform.rotation.z = rotation[2]
-    t.transform.rotation.w = rotation[3]        
+    t.transform.rotation.w = rotation[3]
     return t
-    
+
 # Our main class for computing Forward Kinematics
 class ForwardKinematics(object):
 
@@ -90,8 +90,8 @@ class ForwardKinematics(object):
         self.pub_tf.publish(all_transforms)
 
 
-    """ 
-    This is the function that performs the main forward kinematics computation. It accepts as 
+    """
+    This is the function that performs the main forward kinematics computation. It accepts as
     parameters all the information needed about the joints and links of the robot, as well as
     the current values of all the joints, and must compute and return the transforms from the
     world frame to all the links, ready to be published through tf.
@@ -100,15 +100,15 @@ class ForwardKinematics(object):
     - link_names: a list with all the names of the robot's links, ordered from proximal to distal.
     These are also the names of the link's respective coordinate frame. In other words, the
     transform from the world to link i should be published with "world_link" as the parent frame
-    and link_names[i] as the child frame.    
+    and link_names[i] as the child frame.
 
     - joints: a list of all the joints of the robot, in the same order as the links listed above.
     Each entry in this list is an object which contains the following fields:
      * joint.origin.xyz: the translation from the frame of the previous joint to this one
-     * joint.origin.rpy: the rotation from the frame of the previous joint to this one, 
+     * joint.origin.rpy: the rotation from the frame of the previous joint to this one,
        in ROLL-PITCH-YAW XYZ convention
-     * joint.type: either 'fixed' or 'revolute'. A fixed joint does not move; it is meant to 
-       contain a static transform. 
+     * joint.type: either 'fixed' or 'revolute'. A fixed joint does not move; it is meant to
+       contain a static transform.
      * joint.name: the name of the current joint in the robot description
      * joint.axis: (only if type is 'revolute') the axis of rotation of the joint
 
@@ -121,34 +121,34 @@ class ForwardKinematics(object):
      To find the value of the joint we care about, we must find its name in the "name" list, then
      take the value found at the same index in the "position" list.
 
-    The function must return one tf message. The "transforms" field of this message must list 
+    The function must return one tf message. The "transforms" field of this message must list
     ALL the transforms from the world coordinate frame to the links of the robot. In other words,
     when you are done, all_transforms.transforms must contain a list in which you must place all
     the transforms from the "world_link" coordinate frame to each of the coordinate frames listed
     in "link_names". You can use the "convert_to_message" function (defined above) for a convenient
     way to create a tf message from a transformation matrix.
-    """    
+    """
     def compute_transforms(self, link_names, joints, joint_values):
         all_transforms = tf.msg.tfMessage()
         # We start with the identity
         T = tf.transformations.identity_matrix()
-        
+
         #rospy.logdebug("[Link Names]: %s", link_names)
-        
+
         #rospy.logdebug("[Joint Origins x,y,z]: %s", joints[0].origin.xyz)
         #rospy.logdebug("[Joint Types]: %s", joints[0].type)
         #rospy.logdebug("[Joint Names]: %s", joints[0].name)
-        #rospy.logdebug("[Joint Axis]: %s", joints[0].axis)   
+        #rospy.logdebug("[Joint Axis]: %s", joints[0].axis)
 
         #rospy.logdebug("[Joint Name Values]: %s", joint_values.name)
         #rospy.logdebug("[Joint Position Values]: %s", joint_values.position)
-        
+
         '''
         the transform from the world to link i should be published with world_link as the parent
         frame and link_names[i] as the child frame.
 
         One way to complete the assignment is in iterative fashion: assuming you have compute the
-        transform from the world_link coordinate frame to link i, you just need to update that 
+        transform from the world_link coordinate frame to link i, you just need to update that
         with the transform from link i to link i+1 and you now have the transform from the
         world_link frame to link i+1.
         '''
@@ -160,15 +160,15 @@ class ForwardKinematics(object):
             # translation part respect of the previous frame
             D = tf.transformations.translation_matrix(joints[it].origin.xyz)
 
-            # Obtain current joint value 
+            # Obtain current joint value
             try:
                 index = joint_values.name.index(joints[it].name)
                 q = joint_values.position[index]
 
             except ValueError as e:
                 q = 0.0
-                #rospy.logdebug("%s", e)
-            
+                rospy.logdebug("%s", e)
+
             if joints[it].type == 'revolute':
                 # Obtain the rotation axis of the frame
                 axis = joints[it].axis
@@ -186,9 +186,8 @@ class ForwardKinematics(object):
 
         #rospy.logdebug("all_transforms: %s", all_transforms.transforms)
         return all_transforms
-       
+
 if __name__ == '__main__':
     rospy.init_node('fwk', anonymous=True)
     fwk = ForwardKinematics()
     rospy.spin()
-
