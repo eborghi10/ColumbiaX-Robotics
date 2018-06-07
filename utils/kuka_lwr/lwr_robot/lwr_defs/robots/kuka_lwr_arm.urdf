@@ -35,19 +35,19 @@
         ros.import(&quot;rtt_sensor_msgs&quot;);
         ros.import(&quot;lwr_simulation&quot;);
         ros.import(&quot;oro_joint_state_publisher&quot;);
-        
+
         loadComponent(&quot;FRI&quot;,&quot;LWRController&quot;);
         loadComponent(&quot;joints&quot;,&quot;JointStatePublisher&quot;);
-        
+
         loadService(&quot;FRI&quot;,&quot;rosparam&quot;);
         loadService(&quot;joints&quot;,&quot;rosparam&quot;);
-        
+
         setActivity(&quot;FRI&quot;, 0.0, 5, ORO_SCHED_RT);
         setActivity(&quot;joints&quot;, 0.02, 5, ORO_SCHED_RT);
-        
+
         connect(&quot;FRI.JointPosition&quot;,&quot;joints.msrJntPos&quot;, ConnPolicy());
         stream(&quot;joints.joints_state&quot;, rostopic.connection(&quot;/joints_state&quot;));
-        
+
         joints.rosparam.refreshProperties();
         joints.configure();
         joints.start();
@@ -84,8 +84,8 @@
   </material>
   <link name="world_link">
     <!-- Removing inertial tag due to warning:
-    The root link base_footprint has an inertia specified in the URDF, 
-    but KDL does not support a root link with an inertia. 
+    The root link base_footprint has an inertia specified in the URDF,
+    but KDL does not support a root link with an inertia.
     As a workaround, you can add an extra dummy link to your URDF. -->
     <!--inertial>
       <mass value="50.0"/>
@@ -105,7 +105,7 @@
       </geometry>
     </collision>
      --&gt;
-  
+
   </link>
   <!-- First (shoulder) element of the arm. Fixed to its parent. -->
   <joint name="world_link_lwr_arm_base_joint" type="fixed">
@@ -502,4 +502,3 @@
     <mechanicalReduction>1.0</mechanicalReduction>
   </transmission>
 </robot>
-
