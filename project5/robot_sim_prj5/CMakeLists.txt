@@ -33,6 +33,5 @@ add_library(robot_sim_prj5
   src/trajectory_executer.cpp
 )
 
-link_directories(/opt/ros/kinetic/lib/)
 add_executable(robot_sim_bringup_prj5 src/robot_sim_bringup.cpp)
-target_link_libraries(robot_sim_bringup_prj5 ${catkin_LIBRARIES} robot_sim_prj5 urdf)
+target_link_libraries(robot_sim_bringup_prj5 ${catkin_LIBRARIES} robot_sim_prj5)
