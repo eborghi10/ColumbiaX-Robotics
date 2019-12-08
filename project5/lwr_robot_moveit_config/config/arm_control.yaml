@@ -1,0 +1,24 @@
+# Publish all joint states
+# Creates the /joint_states topic necessary in ROS
+joint_state_controller:
+  type: joint_state_controller/JointStateController
+  publish_rate: 50
+
+arm_position_controller:
+  type: effort_controllers/JointTrajectoryController
+  joints:
+    - lwr_arm_0_joint
+    - lwr_arm_1_joint
+    - lwr_arm_2_joint
+    - lwr_arm_3_joint
+    - lwr_arm_4_joint
+    - lwr_arm_5_joint
+    - lwr_arm_6_joint
+  gains:
+    lwr_arm_0_joint: {p: 10, i: 1, d: 0.001}
+    lwr_arm_1_joint: {p: 10, i: 1, d: 0.001}
+    lwr_arm_2_joint: {p: 10, i: 1, d: 0.001}
+    lwr_arm_3_joint: {p: 10, i: 1, d: 0.001}
+    lwr_arm_4_joint: {p: 10, i: 1, d: 0.001}
+    lwr_arm_5_joint: {p: 10, i: 1, d: 0.001}
+    lwr_arm_6_joint: {p: 10, i: 1, d: 0.001}
