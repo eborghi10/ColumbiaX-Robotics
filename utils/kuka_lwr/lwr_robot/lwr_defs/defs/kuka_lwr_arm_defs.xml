@@ -18,7 +18,7 @@
 
     <!-- First (shoulder) element of the arm. Fixed to its parent. -->
     <joint name="${parent}_${name}_arm_base_joint" type="fixed">
-      <insert_block name="origin"/>
+      <xacro:insert_block name="origin"/>
       <parent link="${parent}"/>
       <child link="calib_${name}_arm_base_link"/>
     </joint>
