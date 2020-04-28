@@ -50,7 +50,7 @@
     <gazebo reference="calib_${name}_arm_base_link">
       <turnGravityOff>true</turnGravityOff>
     </gazebo>
-    
+
     <!-- Second segment of the arm. Joint along z-axis -->
     <joint name="${name}_arm_0_joint" type="revolute">
       <origin xyz="0 0 0.11" rpy="0 0 0"/>
@@ -88,21 +88,21 @@
           <mesh filename="package://lwr_defs/meshes/lwr/convex/arm_segment_a_convex.stl"/>
         </geometry>
       </collision>
- -->     
+ -->
       <collision>
         <origin xyz="0 0 0.0" rpy="0 0 0"/>
         <geometry>
           <sphere radius="0.07"/>
         </geometry>
       </collision>
-      
+
       <collision>
         <origin xyz="0 -0.06 0.2" rpy="0 0 0"/>
         <geometry>
           <sphere radius="0.07"/>
         </geometry>
       </collision>
-      
+
       <collision>
         <origin xyz="0 -0.03 0.1" rpy="0.291 0 0"/>
         <geometry>
@@ -165,14 +165,14 @@
           <sphere radius="0.07"/>
         </geometry>
       </collision>
-      
+
       <collision>
         <origin xyz="0 0.06 0.0" rpy="0 0 0"/>
         <geometry>
           <sphere radius="0.07"/>
         </geometry>
       </collision>
-      
+
       <collision>
         <origin xyz="0 0.03 0.1" rpy="0.291 0 0"/>
         <geometry>
@@ -184,7 +184,7 @@
     <gazebo reference="${name}_arm_2_link">
       <gravity>0</gravity>
     </gazebo>
-    
+
     <transmission name="${name}_arm_1_trans" type="SimpleTransmission">
       <actuator name="${name}_arm_1_motor"/>
       <joint name="${name}_arm_1_joint"/>
@@ -235,14 +235,14 @@
           <sphere radius="0.07"/>
         </geometry>
       </collision>
-      
+
       <collision>
         <origin xyz="0 0.06 0.2" rpy="0 0 0"/>
         <geometry>
           <sphere radius="0.07"/>
         </geometry>
       </collision>
-      
+
       <collision>
         <origin xyz="0 0.03 0.1" rpy="-0.291 0 0"/>
         <geometry>
@@ -305,14 +305,14 @@
           <sphere radius="0.07"/>
         </geometry>
       </collision>
-      
+
       <collision>
         <origin xyz="0 -0.06 0.0" rpy="0 0 0"/>
         <geometry>
           <sphere radius="0.07"/>
         </geometry>
       </collision>
-      
+
       <collision>
         <origin xyz="0 -0.03 0.1" rpy="-0.291 0 0"/>
         <geometry>
@@ -375,14 +375,14 @@
           <sphere radius="0.07"/>
         </geometry>
       </collision>
-      
+
       <collision>
         <origin xyz="0 -0.04 0.19" rpy="0 0 0"/>
         <geometry>
           <sphere radius="0.07"/>
         </geometry>
       </collision>
-      
+
       <collision>
         <origin xyz="0 -0.02 0.095" rpy="0.207 0 0"/>
         <geometry>
@@ -394,7 +394,7 @@
     <gazebo reference="${name}_arm_5_link">
       <turnGravityOff>true</turnGravityOff>
     </gazebo>
-    
+
     <transmission name="${name}_arm_4_trans" type="SimpleTransmission">
       <actuator name="${name}_arm_4_motor"/>
       <joint name="${name}_arm_4_joint"/>
@@ -488,7 +488,7 @@
     <gazebo reference="${name}_arm_7_link">
       <turnGravityOff>true</turnGravityOff>
     </gazebo>
-    
+
     <transmission name="${name}_arm_6_trans" type="SimpleTransmission">
       <actuator name="${name}_arm_6_motor"/>
       <joint name="${name}_arm_6_joint"/>
