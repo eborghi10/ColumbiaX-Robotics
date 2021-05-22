@@ -5,9 +5,9 @@
   <xacro:include filename="$(find lwr_defs)/defs/gazebo_defs.xml"/>
   <xacro:include filename="$(find lwr_defs)/defs/materials.xml"/>
 
-  <link name="world"/>
+  <link name="world_link"/>
 
-  <kuka_lwr_arm parent="world" name="lwr" right="1">
+  <kuka_lwr_arm parent="world_link" name="lwr" right="1">
     <origin xyz="0 0 0.2" rpy="0 0 0"/>
   </kuka_lwr_arm>
 
