@@ -16,7 +16,7 @@ from visualization_msgs.msg import Marker
 from std_msgs.msg import Float32
 
 from grader import CartesianGrader
-    
+
 def convert_to_message(T):
     t = geometry_msgs.msg.Pose()
     position = tf.transformations.translation_from_matrix(T)
@@ -40,7 +40,7 @@ def convert_to_trans_message(T):
     t.rotation.x = orientation[0]
     t.rotation.y = orientation[1]
     t.rotation.z = orientation[2]
-    t.rotation.w = orientation[3] 
+    t.rotation.w = orientation[3]
     return t
 
 # Returns the angle-axis representation of the rotation contained in the input matrix
@@ -79,7 +79,7 @@ class MarkerControl(object):
         self.robot = URDF.from_parameter_server()
 
         # Publishes Cartesian goals
-        self.pub_command = rospy.Publisher("/cartesian_command", geometry_msgs.msg.Transform, 
+        self.pub_command = rospy.Publisher("/cartesian_command", geometry_msgs.msg.Transform,
                                            queue_size=1)
 
         # Publishes Redundancy goals
@@ -102,7 +102,7 @@ class MarkerControl(object):
         self.x_target = tf.transformations.identity_matrix()
         self.q0_desired = 0
 
-        self.mutex = Lock()        
+        self.mutex = Lock()
         self.timer = rospy.Timer(rospy.Duration(0.3), self.timer_callback)
 
         #Subscribes to information about what the current joint values are.
@@ -131,39 +131,39 @@ class MarkerControl(object):
 
         move_control = InteractiveMarkerControl()
         move_control.name = "move_x"
-        move_control.orientation.w = 1
-        move_control.orientation.x = 1
+        move_control.orientation.w = 0.707
+        move_control.orientation.x = 0.707
         move_control.interaction_mode = InteractiveMarkerControl.MOVE_AXIS
         control_marker.controls.append(move_control)
         move_control = InteractiveMarkerControl()
         move_control.name = "move_y"
-        move_control.orientation.w = 1
-        move_control.orientation.y = 1
+        move_control.orientation.w = 0.707
+        move_control.orientation.y = 0.707
         move_control.interaction_mode = InteractiveMarkerControl.MOVE_AXIS
         control_marker.controls.append(move_control)
         move_control = InteractiveMarkerControl()
         move_control.name = "move_z"
-        move_control.orientation.w = 1
-        move_control.orientation.z = 1
+        move_control.orientation.w = 0.707
+        move_control.orientation.z = 0.707
         move_control.interaction_mode = InteractiveMarkerControl.MOVE_AXIS
         control_marker.controls.append(move_control)
 
         move_control = InteractiveMarkerControl()
         move_control.name = "rotate_x"
-        move_control.orientation.w = 1
-        move_control.orientation.x = 1
+        move_control.orientation.w = 0.707
+        move_control.orientation.x = 0.707
         move_control.interaction_mode = InteractiveMarkerControl.ROTATE_AXIS
         control_marker.controls.append(move_control)
         move_control = InteractiveMarkerControl()
         move_control.name = "rotate_y"
-        move_control.orientation.w = 1
-        move_control.orientation.z = 1
+        move_control.orientation.w = 0.707
+        move_control.orientation.z = 0.707
         move_control.interaction_mode = InteractiveMarkerControl.ROTATE_AXIS
         control_marker.controls.append(move_control)
         move_control = InteractiveMarkerControl()
         move_control.name = "rotate_z"
-        move_control.orientation.w = 1
-        move_control.orientation.y = 1
+        move_control.orientation.w = 0.707
+        move_control.orientation.y = 0.707
         move_control.interaction_mode = InteractiveMarkerControl.ROTATE_AXIS
         control_marker.controls.append(move_control)
 
@@ -185,8 +185,8 @@ class MarkerControl(object):
         redundancy_marker.name = "red_marker"
         rotate_control = InteractiveMarkerControl()
         rotate_control.name = "rotate_z"
-        rotate_control.orientation.w = 1
-        rotate_control.orientation.y = 1
+        rotate_control.orientation.w = 0.707
+        rotate_control.orientation.y = 0.707
         rotate_control.interaction_mode = InteractiveMarkerControl.ROTATE_AXIS
         redundancy_marker.controls.append(rotate_control)
         redundancy_marker.scale = 0.25
@@ -206,7 +206,7 @@ class MarkerControl(object):
         self.server.setPose("cc_marker", convert_to_message(T))
         self.server.applyChanges()
 
-    def redundancy_marker_feedback(self, feedback):       
+    def redundancy_marker_feedback(self, feedback):
         if feedback.event_type == feedback.MOUSE_DOWN:
             self.x_target = self.x_current
             self.red_tracking = 1
@@ -238,8 +238,8 @@ class MarkerControl(object):
                                                       feedback.pose.orientation.y,
                                                       feedback.pose.orientation.z,
                                                       feedback.pose.orientation.w))
-            T = tf.transformations.translation_matrix((feedback.pose.position.x, 
-                                                       feedback.pose.position.y, 
+            T = tf.transformations.translation_matrix((feedback.pose.position.x,
+                                                       feedback.pose.position.y,
                                                        feedback.pose.position.z))
             #self.x_target = numpy.dot( T,numpy.dot(R,self.R_base) )
             self.x_target = numpy.dot( T,R )
@@ -308,7 +308,7 @@ class MarkerControl(object):
         return tf.transformations.rotation_matrix(angle, rot_axis)
 
     def process_link_recursive(self, link, T, joint_values):
-        if link not in self.robot.child_map: 
+        if link not in self.robot.child_map:
             self.x_current = T
             return
         for i in range(0,len(self.robot.child_map[link])):
@@ -316,12 +316,12 @@ class MarkerControl(object):
             if joint_name not in self.robot.joint_map:
                 rospy.logerror("Joint not found in map")
                 continue
-            current_joint = self.robot.joint_map[joint_name]        
+            current_joint = self.robot.joint_map[joint_name]
 
-            trans_matrix = tf.transformations.translation_matrix((current_joint.origin.xyz[0], 
+            trans_matrix = tf.transformations.translation_matrix((current_joint.origin.xyz[0],
                                                                   current_joint.origin.xyz[1],
                                                                   current_joint.origin.xyz[2]))
-            rot_matrix = tf.transformations.euler_matrix(current_joint.origin.rpy[0], 
+            rot_matrix = tf.transformations.euler_matrix(current_joint.origin.rpy[0],
                                                          current_joint.origin.rpy[1],
                                                          current_joint.origin.rpy[2], 'rxyz')
             origin_T = numpy.dot(trans_matrix, rot_matrix)
@@ -335,13 +335,13 @@ class MarkerControl(object):
                 self.joint_transforms.append(aligned_joint_T)
                 index = joint_values.name.index(current_joint.name)
                 angle = joint_values.position[index]
-                joint_rot_T = tf.transformations.rotation_matrix(angle, 
+                joint_rot_T = tf.transformations.rotation_matrix(angle,
                                                                  numpy.asarray(current_joint.axis))
-                next_link_T = numpy.dot(current_joint_T, joint_rot_T) 
+                next_link_T = numpy.dot(current_joint_T, joint_rot_T)
             else:
                 next_link_T = current_joint_T
 
-            self.process_link_recursive(next_link, next_link_T, joint_values)       
+            self.process_link_recursive(next_link, next_link_T, joint_values)
 
 if __name__ == '__main__':
     rospy.init_node('cartesian_control', anonymous=True)
