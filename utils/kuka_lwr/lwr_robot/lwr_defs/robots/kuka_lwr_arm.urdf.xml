@@ -5,15 +5,17 @@
   <xacro:include filename="$(find lwr_defs)/defs/gazebo_defs.xml"/>
   <xacro:include filename="$(find lwr_defs)/defs/materials.xml"/>
 
-  <link name="world_link"/>
-
-  <kuka_lwr_arm parent="world_link" name="lwr" right="1">
+  <link name="world_link">
     <visual>
-      <origin rpy="0 0 0" xyz="0 0 0.1"/>
+      <origin xyz="0 0 0.1"/>
       <geometry>
         <box size="0.2 0.2 0.2"/>
       </geometry>
     </visual>
-  </kuka_lwr_arm>
+  </link>
+
+  <xacro:kuka_lwr_arm parent="world_link" name="lwr" right="1">
+    <origin xyz="0 0 0.2"/>
+  </xacro:kuka_lwr_arm>
 
 </robot>
